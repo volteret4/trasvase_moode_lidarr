@@ -3,239 +3,250 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TRASVASE — Gestor de Colecciones</title>
+<title>TRASVASE</title>
 <style>
-  :root {
-    --green:      #00ff41;
-    --green-dim:  #00cc33;
-    --green-dark: #003310;
-    --green-glow: 0 0 8px #00ff4166;
-    --green-glow2:0 0 16px #00ff4188;
-    --bg:   #080808; --bg2: #0d0d0d; --bg3: #111;
-    --border: #1a2e1a; --border-hi: #00ff4133;
-    --text: #b0b0b0; --text-hi: #e8e8e8;
-    --red:  #ff3333;
-    --amber:#ffaa00; --amber-dark:#1e1400;
-    --c1:   #00ff41; --c1-dark: #003310;
-    --c2:   #00aaff; --c2-dark: #001e2e;
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:var(--bg);color:var(--text);
-    font-family:'JetBrains Mono','Fira Mono','Consolas',monospace;font-size:13px;line-height:1.5}
-  ::-webkit-scrollbar{width:6px;height:6px}
-  ::-webkit-scrollbar-track{background:var(--bg)}
-  ::-webkit-scrollbar-thumb{background:var(--green-dark);border-radius:3px}
-  ::-webkit-scrollbar-thumb:hover{background:var(--green-dim)}
+:root{
+  --g:#00ff41;--gd:#00cc33;--gk:#003310;--gg:0 0 8px #00ff4166;--gg2:0 0 16px #00ff4188;
+  --bg:#080808;--bg2:#0d0d0d;--bg3:#111;--br:#1a2e1a;--bh:#00ff4133;
+  --tx:#b0b0b0;--th:#e8e8e8;--red:#ff3333;
+  --amber:#ffaa00;--ak:#1e1400;
+  --c1:#00ff41;--c1k:#003310;--c2:#00aaff;--c2k:#001e2e;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--tx);
+  font-family:'JetBrains Mono','Fira Mono',Consolas,monospace;font-size:13px;line-height:1.5}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--gk);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gd)}
 
-  /* header */
-  header{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:1.5rem;
-    padding:0 1.5rem;height:52px;background:var(--bg);border-bottom:1px solid var(--border-hi);
-    box-shadow:0 2px 20px #000a}
-  .logo{font-size:1.1rem;font-weight:700;letter-spacing:.2em;color:var(--green);
-    text-shadow:var(--green-glow2);white-space:nowrap}
-  .logo span{color:var(--text);font-weight:400}
-  nav{display:flex;gap:.25rem}
-  .nav-link{padding:.3rem .8rem;border-radius:3px;font-size:.75rem;font-weight:600;
-    letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
-    border:1px solid transparent;transition:all .15s;color:var(--text)}
-  .nav-link:hover{border-color:var(--border-hi);color:var(--green);background:var(--green-dark)}
-  .nav-link.active{border-color:var(--green-dim);color:var(--green)}
+/* header */
+header{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:1.5rem;
+  padding:0 1.5rem;height:52px;background:var(--bg);border-bottom:1px solid var(--bh);
+  box-shadow:0 2px 20px #000a}
+.logo{font-size:1.1rem;font-weight:700;letter-spacing:.2em;color:var(--g);
+  text-shadow:var(--gg2);white-space:nowrap}
+.logo span{color:var(--tx);font-weight:400}
+nav{display:flex;gap:.25rem}
+.nav-link{padding:.3rem .8rem;border-radius:3px;font-size:.75rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
+  border:1px solid transparent;transition:all .15s;color:var(--tx)}
+.nav-link:hover{border-color:var(--bh);color:var(--g);background:var(--gk)}
+.nav-link.active{border-color:var(--gd);color:var(--g)}
 
-  /* stats */
-  .stats-bar{display:flex;gap:1.5rem;flex-wrap:wrap;padding:.6rem 1.5rem;
-    background:var(--bg2);border-bottom:1px solid var(--border)}
-  .stat{display:flex;align-items:center;gap:.4rem}
-  .stat-label{color:#555;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em}
-  .stat-value{color:var(--green);font-size:.95rem;font-weight:700}
-  .stat-value.c2{color:var(--c2)}
-  .stat-value.missing{color:var(--amber);text-shadow:0 0 8px #ffaa0088}
+/* stats */
+.stats-bar{display:flex;gap:1.5rem;flex-wrap:wrap;padding:.55rem 1.5rem;
+  background:var(--bg2);border-bottom:1px solid var(--br)}
+.stat{display:flex;align-items:center;gap:.4rem}
+.stat-label{color:#555;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em}
+.stat-value{color:var(--g);font-size:.95rem;font-weight:700}
+.stat-value.c2{color:var(--c2)}.stat-value.miss{color:var(--amber);text-shadow:0 0 8px #ffaa0077}
 
-  /* main tabs */
-  .main-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border-hi);padding:0 1.5rem}
-  .mtab{padding:.6rem 1.2rem;font-family:inherit;font-size:.78rem;font-weight:600;
-    letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
-    border:none;border-bottom:2px solid transparent;
-    background:transparent;color:#444;transition:all .15s;margin-bottom:-1px}
-  .mtab:hover{color:var(--text)}
-  .mtab.active{color:var(--green);border-bottom-color:var(--green)}
+/* main tabs */
+.main-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--bh);padding:0 1.5rem}
+.mtab{padding:.55rem 1.1rem;font-family:inherit;font-size:.76rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+  border:none;border-bottom:2px solid transparent;
+  background:transparent;color:#444;transition:all .15s;margin-bottom:-1px}
+.mtab:hover{color:var(--tx)}.mtab.active{color:var(--g);border-bottom-color:var(--g)}
 
-  /* buttons */
-  .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.38rem .85rem;
-    border-radius:3px;border:1px solid;font-family:inherit;font-size:.78rem;font-weight:600;
-    cursor:pointer;letter-spacing:.05em;white-space:nowrap;transition:all .15s;text-transform:uppercase}
-  .btn:disabled{opacity:.3;cursor:not-allowed}
-  .btn svg{width:13px;height:13px;flex-shrink:0}
-  .btn-primary{background:var(--green);border-color:var(--green);color:#000}
-  .btn-primary:not(:disabled):hover{background:#fff;border-color:#fff;box-shadow:var(--green-glow2)}
-  .btn-ghost{background:transparent;border-color:var(--green-dim);color:var(--green)}
-  .btn-ghost:not(:disabled):hover{background:var(--green-dark);box-shadow:var(--green-glow)}
-  .btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
-  .btn-danger:not(:disabled):hover{background:#2a0000}
-  .spacer{flex:1}
-  .sel-count{color:var(--green-dim);font-size:.8rem;min-width:6ch;text-align:right}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .8rem;
+  border-radius:3px;border:1px solid;font-family:inherit;font-size:.76rem;font-weight:600;
+  cursor:pointer;letter-spacing:.05em;white-space:nowrap;transition:all .15s;text-transform:uppercase}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn svg{width:12px;height:12px;flex-shrink:0}
+.btn-primary{background:var(--g);border-color:var(--g);color:#000}
+.btn-primary:not(:disabled):hover{background:#fff;border-color:#fff;box-shadow:var(--gg2)}
+.btn-ghost{background:transparent;border-color:var(--gd);color:var(--g)}
+.btn-ghost:not(:disabled):hover{background:var(--gk);box-shadow:var(--gg)}
+.btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
+.btn-danger:not(:disabled):hover{background:#2a0000}
+.spacer{flex:1}
+.sel-count{color:var(--gd);font-size:.78rem;min-width:6ch;text-align:right}
 
-  /* inputs */
-  input[type="search"]{background:var(--bg3);border:1px solid var(--border);color:var(--text-hi);
-    padding:.38rem .75rem;border-radius:3px;outline:none;font-family:inherit;font-size:.85rem;
-    transition:border-color .2s,box-shadow .2s}
-  input[type="search"]:focus{border-color:var(--green-dim);box-shadow:var(--green-glow)}
-  input[type="checkbox"]{display:none}
-  .cb-box{display:inline-block;width:14px;height:14px;border:1px solid #333;border-radius:2px;
-    background:var(--bg);transition:all .1s;cursor:pointer;position:relative}
-  input[type="checkbox"]:checked+.cb-box{background:var(--green);border-color:var(--green);box-shadow:var(--green-glow)}
-  input[type="checkbox"]:checked+.cb-box::after{content:'';position:absolute;left:3px;top:1px;
-    width:5px;height:8px;border:2px solid #000;border-top:none;border-left:none;transform:rotate(45deg)}
-  label.cb-label{display:flex;align-items:center;justify-content:center;cursor:pointer}
+input[type=search]{background:var(--bg3);border:1px solid var(--br);color:var(--th);
+  padding:.35rem .7rem;border-radius:3px;outline:none;font-family:inherit;font-size:.82rem;
+  transition:border-color .2s,box-shadow .2s}
+input[type=search]:focus{border-color:var(--gd);box-shadow:var(--gg)}
+input[type=checkbox]{display:none}
+.cb-box{display:inline-block;width:14px;height:14px;border:1px solid #333;border-radius:2px;
+  background:var(--bg);transition:all .1s;cursor:pointer;position:relative}
+input[type=checkbox]:checked+.cb-box{background:var(--g);border-color:var(--g);box-shadow:var(--gg)}
+input[type=checkbox]:checked+.cb-box::after{content:'';position:absolute;left:3px;top:1px;
+  width:5px;height:8px;border:2px solid #000;border-top:none;border-left:none;transform:rotate(45deg)}
+label.cbl{display:flex;align-items:center;justify-content:center;cursor:pointer}
 
-  /* ── TAB 1 ── */
-  #tab-missing{display:flex;flex-direction:column;height:calc(100vh - 52px - 42px - 40px)}
-  .toolbar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;
-    padding:.65rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
-  .search-wrap{position:relative;flex:1;min-width:160px;max-width:300px}
-  .search-wrap svg{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);
-    width:14px;height:14px;color:#444;pointer-events:none}
-  .search-wrap input{padding-left:2rem;width:100%}
+/* ── TAB 1 ── */
+#tab-missing{display:flex;flex-direction:column;height:calc(100vh - 52px - 38px - 40px)}
+.toolbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;
+  padding:.55rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--br);flex-shrink:0}
+.sw{position:relative;flex:1;min-width:150px;max-width:280px}
+.sw svg{position:absolute;left:.55rem;top:50%;transform:translateY(-50%);
+  width:13px;height:13px;color:#444;pointer-events:none}
+.sw input{padding-left:1.9rem;width:100%}
 
-  .table-wrap{flex:1;overflow:auto}
-  table{width:100%;border-collapse:collapse;table-layout:fixed}
-  colgroup col:nth-child(1){width:36px}
-  colgroup col:nth-child(2){width:22%}
-  colgroup col:nth-child(3){width:26%}
-  colgroup col:nth-child(4){width:6%}
-  colgroup col:nth-child(5){width:12%}
-  colgroup col:nth-child(6){width:16%}
-  colgroup col:nth-child(7){width:88px}
-  thead th{position:sticky;top:0;z-index:10;background:#0a1a0a;
-    color:var(--green-dim);font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;
-    font-weight:600;padding:.5rem .7rem;border-bottom:1px solid var(--border-hi);
-    text-align:left;white-space:nowrap;user-select:none;cursor:pointer}
-  thead th:first-child{cursor:default;text-align:center}
-  thead th.sorted-asc::after{content:' ↑';color:var(--green)}
-  thead th.sorted-desc::after{content:' ↓';color:var(--green)}
-  tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
-  tbody tr:hover{background:#111a11}
-  tbody tr.checked{background:#0a1e0a}
-  tbody tr.checked:hover{background:#0d2a0d}
-  td{padding:.42rem .7rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  td:first-child{text-align:center;vertical-align:middle}
-  .td-artist{color:var(--text-hi);font-weight:500}
-  .td-title{color:var(--green)}
-  .td-year{color:#888}
-  .td-genre{color:#6a9e6a;font-size:.8rem}
-  .td-label{color:#666;font-size:.8rem}
-  .actions{display:flex;gap:.35rem;align-items:center}
-  .btn-icon{display:inline-flex;align-items:center;justify-content:center;
-    width:28px;height:28px;border-radius:3px;border:1px solid;
-    background:transparent;cursor:pointer;transition:all .15s;flex-shrink:0}
-  .btn-icon svg{width:13px;height:13px}
-  .btn-icon-copy{border-color:#225522;color:var(--green-dim)}
-  .btn-icon-copy:hover{border-color:var(--green);color:var(--green);background:var(--green-dark);box-shadow:var(--green-glow)}
-  .btn-icon-del{border-color:#3a1111;color:#663333}
-  .btn-icon-del:hover{border-color:var(--red);color:var(--red);background:#1a0000}
-  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
-    flex:1;gap:1rem;color:#333;padding:3rem;text-align:center}
-  .empty svg{width:48px;height:48px;color:#222}
+/* column picker button + popover */
+.col-picker-wrap{position:relative}
+.col-picker-btn{padding:.35rem .65rem;font-size:.72rem}
+.col-picker-pop{position:absolute;top:calc(100% + 4px);right:0;z-index:300;
+  background:var(--bg3);border:1px solid var(--bh);border-radius:5px;
+  box-shadow:0 8px 32px #000a;min-width:200px;display:none}
+.col-picker-pop.open{display:block}
+.cp-header{padding:.5rem .75rem;color:var(--gd);font-size:.7rem;text-transform:uppercase;
+  letter-spacing:.1em;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center}
+.cp-reset{background:none;border:none;color:#555;cursor:pointer;font-family:inherit;font-size:.7rem}
+.cp-reset:hover{color:var(--g)}
+.cp-list{padding:.35rem 0;max-height:260px;overflow-y:auto}
+.cp-item{display:flex;align-items:center;gap:.5rem;padding:.3rem .75rem;cursor:grab;
+  transition:background .1s;user-select:none}
+.cp-item:hover{background:#111a11}
+.cp-item.dragging{opacity:.4}
+.cp-item.drag-over{border-top:2px solid var(--g)}
+.cp-drag{color:#333;cursor:grab;flex-shrink:0}
+.cp-label{flex:1;font-size:.82rem;color:var(--tx)}
+.cp-item.fixed .cp-drag{cursor:default}
 
-  /* ── TAB 2 ── */
-  #tab-explore{display:none;flex-direction:column;height:calc(100vh - 52px - 42px - 40px)}
-  .explore-toolbar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;
-    padding:.6rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
-  .etabs{display:flex;gap:2px}
-  .etab{padding:.3rem .72rem;border-radius:3px;font-size:.75rem;font-weight:600;
-    letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--border);
-    background:transparent;cursor:pointer;transition:all .15s;color:#555;font-family:inherit}
-  .etab:hover{border-color:var(--border-hi);color:var(--text)}
-  .etab.active{border-color:var(--green-dim);color:var(--green);background:var(--green-dark)}
+.tw{flex:1;overflow:auto}
+table{width:100%;border-collapse:collapse}
+thead th{position:sticky;top:0;z-index:10;background:#0a1a0a;
+  color:var(--gd);font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;
+  font-weight:600;padding:.45rem .65rem;border-bottom:1px solid var(--bh);
+  text-align:left;white-space:nowrap;user-select:none}
+thead th.sortable{cursor:pointer}
+thead th.sorted-asc::after{content:' ↑';color:var(--g)}
+thead th.sorted-desc::after{content:' ↓';color:var(--g)}
+thead th:first-child{cursor:default;text-align:center;width:36px}
+tbody tr{border-bottom:1px solid var(--br);transition:background .1s}
+tbody tr:hover{background:#111a11}
+tbody tr.checked{background:#0a1e0a}
+td{padding:.38rem .65rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0}
+td:first-child{text-align:center;vertical-align:middle;width:36px;max-width:none}
+.td-artist{color:var(--th);font-weight:500}.td-title{color:var(--g)}
+.td-year{color:#888}.td-genre{color:#6a9e6a;font-size:.78rem}
+.td-label{color:#666;font-size:.78rem}.td-path{color:#444;font-size:.75rem;font-style:italic}
+.td-num{color:#5a8a5a;text-align:right;font-size:.78rem}
+.ai{display:flex;gap:.3rem;align-items:center}
+.bi{display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:3px;border:1px solid;
+  background:transparent;cursor:pointer;transition:all .15s;flex-shrink:0}
+.bi svg{width:12px;height:12px}
+.bi-cp{border-color:#225522;color:var(--gd)}
+.bi-cp:hover{border-color:var(--g);color:var(--g);background:var(--gk);box-shadow:var(--gg)}
+.bi-dl{border-color:#3a1111;color:#663333}
+.bi-dl:hover{border-color:var(--red);color:var(--red);background:#1a0000}
 
-  .explore-body{flex:1;display:flex;overflow:hidden}
+/* cover thumbnail */
+.cover-thumb{width:38px;height:38px;border-radius:2px;object-fit:cover;
+  border:1px solid var(--br);background:var(--bg2);display:block}
+.cover-ph{width:38px;height:38px;border-radius:2px;border:1px solid var(--br);
+  background:var(--bg2);display:flex;align-items:center;justify-content:center;color:#2a2a2a}
+.cover-ph svg{width:18px;height:18px}
 
-  .explore-list-panel{width:290px;flex-shrink:0;border-right:1px solid var(--border);
-    display:flex;flex-direction:column;overflow:hidden}
-  .explore-list-search{padding:.5rem;border-bottom:1px solid var(--border);flex-shrink:0}
-  .explore-list-search input{width:100%;font-size:.82rem}
-  .explore-list{flex:1;overflow-y:auto}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;gap:1rem;color:#333;padding:3rem;text-align:center}
+.empty svg{width:44px;height:44px;color:#222}
 
-  .explore-item{display:flex;align-items:center;padding:.42rem .72rem;
-    border-bottom:1px solid #111;cursor:pointer;transition:background .1s;gap:.4rem}
-  .explore-item:hover{background:#111a11}
-  .explore-item.active{background:#0a2a0a;border-left:2px solid var(--green);
-    padding-left:calc(.72rem - 2px)}
-  .ei-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    color:var(--text-hi);font-size:.83rem}
-  .ei-counts{display:flex;gap:.25rem;flex-shrink:0}
-  .ei-c{font-size:.68rem;font-weight:700;padding:.08rem .28rem;border-radius:2px}
-  .ei-c1{background:var(--c1-dark);color:var(--c1);border:1px solid #005520}
-  .ei-c2{background:var(--c2-dark);color:var(--c2);border:1px solid #003355}
+/* ── TAB 2 ── */
+#tab-explore{display:none;flex-direction:column;height:calc(100vh - 52px - 38px - 40px)}
+.exp-toolbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;
+  padding:.5rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--br);flex-shrink:0}
+.etabs{display:flex;gap:2px}
+.etab{padding:.28rem .68rem;border-radius:3px;font-size:.72rem;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--br);
+  background:transparent;cursor:pointer;transition:all .15s;color:#555;font-family:inherit}
+.etab:hover{border-color:var(--bh);color:var(--tx)}
+.etab.active{border-color:var(--gd);color:var(--g);background:var(--gk)}
 
-  .explore-detail-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
-  .detail-header{padding:.6rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0;
-    display:flex;align-items:center;gap:.75rem;background:var(--bg2)}
-  .detail-title{color:var(--green);font-weight:700;font-size:.9rem}
-  .detail-subtitle{color:#444;font-size:.78rem}
-  .detail-legend{display:flex;gap:.6rem;margin-left:auto}
-  .leg{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:#555}
-  .leg-dot{width:8px;height:8px;border-radius:50%}
-  .detail-wrap{flex:1;overflow:auto}
+.exp-body{flex:1;display:flex;overflow:hidden}
 
-  .detail-table{width:100%;border-collapse:collapse}
-  .detail-table thead th{position:sticky;top:0;z-index:5;background:#090d09;
-    color:var(--green-dim);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;
-    font-weight:600;padding:.42rem .7rem;border-bottom:1px solid var(--border-hi);
-    text-align:left;white-space:nowrap}
-  .detail-table tbody tr{border-bottom:1px solid #0d0d0d;transition:background .1s}
-  .detail-table tbody tr:hover{background:#0d100d}
-  .detail-table tbody tr.only-c2{background:#06080e}
-  .detail-table tbody tr.only-c2:hover{background:#0a0c14}
-  .detail-table td{padding:.36rem .7rem;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .dt-title{color:var(--green)}
-  .only-c2 .dt-title{color:var(--c2)}
-  .dt-text{color:var(--text-hi)}
-  .dt-sub{color:#666;font-size:.78rem}
+/* list panel */
+.exp-lp{width:280px;flex-shrink:0;border-right:1px solid var(--br);
+  display:flex;flex-direction:column;overflow:hidden}
+.exp-ls{padding:.45rem;border-bottom:1px solid var(--br);flex-shrink:0}
+.exp-ls input{width:100%;font-size:.8rem}
+.exp-list{flex:1;overflow-y:auto}
+.ei{display:flex;align-items:center;padding:.38rem .65rem;
+  border-bottom:1px solid #111;cursor:pointer;transition:background .1s;gap:.35rem}
+.ei:hover{background:#111a11}
+.ei.active{background:#0a2a0a;border-left:2px solid var(--g);padding-left:calc(.65rem - 2px)}
+.ei-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--th);font-size:.82rem}
+.ei-cs{display:flex;gap:.2rem}
+.ei-c{font-size:.66rem;font-weight:700;padding:.06rem .26rem;border-radius:2px}
+.ei-c1{background:var(--c1k);color:var(--c1);border:1px solid #005520}
+.ei-c2{background:var(--c2k);color:var(--c2);border:1px solid #003355}
 
-  .col-dot{display:inline-block;width:9px;height:9px;border-radius:50%}
-  .on-c1{background:var(--c1);box-shadow:0 0 4px var(--c1)}
-  .on-c2{background:var(--c2);box-shadow:0 0 4px var(--c2)}
-  .dot-off{background:#222}
+/* detail panel */
+.exp-dp{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.dh{padding:.5rem 1rem;border-bottom:1px solid var(--br);flex-shrink:0;
+  display:flex;align-items:center;gap:.65rem;background:var(--bg2);flex-wrap:wrap}
+.dt{color:var(--g);font-weight:700;font-size:.88rem}
+.ds{color:#444;font-size:.76rem}
+.df{display:flex;gap:2px;margin-left:auto}
+.dfb{padding:.22rem .6rem;border-radius:3px;font-size:.7rem;font-weight:600;
+  text-transform:uppercase;border:1px solid var(--br);background:transparent;
+  cursor:pointer;transition:all .15s;color:#555;font-family:inherit;letter-spacing:.06em}
+.dfb:hover{color:var(--tx);border-color:var(--bh)}
+.dfb.active{border-color:var(--gd);color:var(--g);background:var(--gk)}
+.dleg{display:flex;gap:.5rem}
+.lg{display:flex;align-items:center;gap:.25rem;font-size:.7rem;color:#555}
+.ld{width:8px;height:8px;border-radius:50%}
 
-  .detail-empty{display:flex;align-items:center;justify-content:center;
-    min-height:120px;color:#333;font-size:.85rem}
-  .explore-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;
-    flex:1;gap:.75rem;color:#2a2a2a}
-  .explore-placeholder svg{width:48px;height:48px}
-  .explore-placeholder p{font-size:.85rem}
+.dw{flex:1;overflow:auto}
+.dt-tbl{width:100%;border-collapse:collapse}
+.dt-tbl thead th{position:sticky;top:0;z-index:5;background:#090d09;
+  color:var(--gd);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;
+  font-weight:600;padding:.4rem .65rem;border-bottom:1px solid var(--bh);
+  text-align:left;white-space:nowrap}
+.dt-tbl tbody tr{border-bottom:1px solid #0d0d0d;transition:background .1s}
+.dt-tbl tbody tr:hover{background:#0d100d}
+.dt-tbl tbody tr.oc2{background:#06080e}
+.dt-tbl tbody tr.oc2:hover{background:#090c14}
+.dt-tbl td{padding:.32rem .65rem;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0}
+.dt-tbl td.fixed-w{max-width:none;white-space:nowrap}
+.dtt{color:var(--g)}.oc2 .dtt{color:var(--c2)}
+.dta{color:var(--th)}.dts{color:#666;font-size:.76rem}
+.dtp{color:#333;font-size:.73rem;font-style:italic}
+.dtn{color:#5a8a5a;text-align:right;font-size:.74rem}
+.col-dot{display:inline-block;width:9px;height:9px;border-radius:50%}
+.on-c1{background:var(--c1);box-shadow:0 0 4px var(--c1)}
+.on-c2{background:var(--c2);box-shadow:0 0 4px var(--c2)}
+.dot-off{background:#222}
+.exp-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;gap:.65rem;color:#2a2a2a}
+.exp-ph svg{width:44px;height:44px}
+.exp-ph p{font-size:.82rem}
+.det-empty{display:flex;align-items:center;justify-content:center;
+  min-height:100px;color:#333;font-size:.82rem}
 
-  /* loading */
-  #loading-overlay{position:fixed;inset:0;z-index:999;background:#000d;
-    display:flex;align-items:center;justify-content:center;
-    opacity:0;pointer-events:none;transition:opacity .2s}
-  #loading-overlay.active{opacity:1;pointer-events:all}
-  .spinner{width:36px;height:36px;border:3px solid var(--green-dark);
-    border-top-color:var(--green);border-radius:50%;
-    animation:spin .7s linear infinite;box-shadow:var(--green-glow2)}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  /* toasts */
-  #toasts{position:fixed;bottom:1.5rem;right:1.5rem;z-index:1000;
-    display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
-  .toast{display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem;
-    border-radius:4px;font-size:.8rem;border:1px solid;max-width:340px;
-    animation:slideIn .25s ease-out;pointer-events:all}
-  .toast svg{width:14px;height:14px;flex-shrink:0}
-  .toast-ok{background:#0a1a0a;border-color:var(--green-dim);color:var(--green)}
-  .toast-err{background:#1a0a0a;border-color:var(--red);color:var(--red)}
-  @keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
-
-  /* modal */
-  .modal-bg{position:fixed;inset:0;z-index:200;background:#000b;
-    display:flex;align-items:center;justify-content:center;
-    opacity:0;pointer-events:none;transition:opacity .2s}
-  .modal-bg.active{opacity:1;pointer-events:all}
-  .modal{background:var(--bg3);border:1px solid var(--border-hi);
-    box-shadow:0 0 40px #00ff4122;border-radius:6px;padding:2rem;
-    min-width:340px;max-width:480px;display:flex;flex-direction:column;gap:1.2rem}
-  .modal h3{color:var(--green);font-size:.95rem;letter-spacing:.1em;text-transform:uppercase}
-  .modal p{color:var(--text);font-size:.85rem;line-height:1.7}
-  .modal-actions{display:flex;gap:.6rem;justify-content:flex-end}
+/* loading/toasts/modal */
+#lov{position:fixed;inset:0;z-index:999;background:#000d;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+#lov.on{opacity:1;pointer-events:all}
+.sp{width:34px;height:34px;border:3px solid var(--gk);
+  border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite;box-shadow:var(--gg2)}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toasts{position:fixed;bottom:1.5rem;right:1.5rem;z-index:1000;
+  display:flex;flex-direction:column;gap:.45rem;pointer-events:none}
+.toast{display:flex;align-items:center;gap:.55rem;padding:.55rem .9rem;
+  border-radius:4px;font-size:.78rem;border:1px solid;max-width:340px;
+  animation:si .22s ease-out;pointer-events:all}
+.toast svg{width:13px;height:13px;flex-shrink:0}
+.t-ok{background:#0a1a0a;border-color:var(--gd);color:var(--g)}
+.t-err{background:#1a0a0a;border-color:var(--red);color:var(--red)}
+@keyframes si{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.modal-bg{position:fixed;inset:0;z-index:200;background:#000b;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.on{opacity:1;pointer-events:all}
+.modal{background:var(--bg3);border:1px solid var(--bh);
+  box-shadow:0 0 40px #00ff4122;border-radius:6px;padding:1.8rem;
+  min-width:320px;max-width:460px;display:flex;flex-direction:column;gap:1.1rem}
+.modal h3{color:var(--g);font-size:.92rem;letter-spacing:.1em;text-transform:uppercase}
+.modal p{color:var(--tx);font-size:.83rem;line-height:1.7}
+.modal-act{display:flex;gap:.55rem;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -259,7 +270,7 @@
   <div class="stat"><span class="stat-label">Colección 1</span><span class="stat-value" id="s-c1">—</span></div>
   <div class="stat"><span class="stat-label">Colección 2</span><span class="stat-value c2" id="s-c2">—</span></div>
   <div class="stat"><span class="stat-label">Artistas</span><span class="stat-value" id="s-artists">—</span></div>
-  <div class="stat"><span class="stat-label">Faltan en C1</span><span class="stat-value missing" id="s-missing">—</span></div>
+  <div class="stat"><span class="stat-label">Faltan en C1</span><span class="stat-value miss" id="s-missing">—</span></div>
 </div>
 
 <div class="main-tabs">
@@ -267,92 +278,107 @@
   <button class="mtab" data-tab="explore">Explorar Colecciones</button>
 </div>
 
-<!-- TAB 1: Missing albums -->
+<!-- TAB 1 -->
 <div id="tab-missing">
   <div class="toolbar">
-    <div class="search-wrap">
+    <div class="sw">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <input type="search" id="search" placeholder="Filtrar artista, álbum, género…">
+      <input type="search" id="search" placeholder="Artista, álbum, género…">
     </div>
-    <button class="btn btn-ghost" id="btn-select-all">Seleccionar todo</button>
-    <button class="btn btn-ghost" id="btn-deselect-all">Limpiar</button>
+    <button class="btn btn-ghost" id="btn-sel-all">Sel. todo</button>
+    <button class="btn btn-ghost" id="btn-desel">Limpiar</button>
+    <div class="col-picker-wrap">
+      <button class="btn btn-ghost col-picker-btn" id="cp-btn-missing">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>Columnas
+      </button>
+      <div class="col-picker-pop" id="cpp-missing">
+        <div class="cp-header">Columnas <button class="cp-reset" id="cp-reset-missing">Restablecer</button></div>
+        <div class="cp-list" id="cp-list-missing"></div>
+      </div>
+    </div>
     <div class="spacer"></div>
     <span class="sel-count" id="sel-count"></span>
     <button class="btn btn-primary" id="btn-copy-sel" disabled>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-      Copiar a temp
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>Copiar a temp
     </button>
   </div>
-  <div class="table-wrap">
-    <table>
-      <colgroup><col><col><col><col><col><col><col></colgroup>
-      <thead>
-        <tr>
-          <th><label class="cb-label"><input type="checkbox" id="check-all"><span class="cb-box"></span></label></th>
-          <th data-col="artist">Artista</th>
-          <th data-col="title">Álbum</th>
-          <th data-col="year">Año</th>
-          <th data-col="genre">Género</th>
-          <th data-col="label">Sello</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="albums-body"></tbody>
+  <div class="tw" id="missing-tw">
+    <table id="missing-table">
+      <thead id="missing-thead"></thead>
+      <tbody id="missing-tbody"></tbody>
     </table>
-    <div class="empty" id="empty-state" style="display:none;">
+    <div class="empty" id="missing-empty" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
       </svg>
-      <p>No hay álbumes ausentes o no hay resultados para el filtro.</p>
+      <p>No hay álbumes ausentes o no hay resultados.</p>
     </div>
   </div>
 </div>
 
-<!-- TAB 2: Explore -->
+<!-- TAB 2 -->
 <div id="tab-explore">
-  <div class="explore-toolbar">
+  <div class="exp-toolbar">
     <div class="etabs">
       <button class="etab active" data-view="artists">Artistas</button>
       <button class="etab" data-view="genres">Géneros</button>
       <button class="etab" data-view="labels">Sellos</button>
     </div>
     <div class="spacer"></div>
-    <span id="explore-count" style="color:#444;font-size:.78rem;"></span>
+    <span id="exp-count" style="color:#444;font-size:.76rem"></span>
   </div>
-  <div class="explore-body">
-    <div class="explore-list-panel">
-      <div class="explore-list-search">
-        <input type="search" id="explore-search" placeholder="Buscar…">
-      </div>
-      <div class="explore-list" id="explore-list">
-        <div class="detail-empty">Selecciona la pestaña Explorar para cargar</div>
-      </div>
+  <div class="exp-body">
+    <div class="exp-lp">
+      <div class="exp-ls"><input type="search" id="exp-search" placeholder="Buscar…"></div>
+      <div class="exp-list" id="exp-list"><div class="det-empty">Abre esta pestaña para cargar</div></div>
     </div>
-    <div class="explore-detail-panel">
-      <div class="explore-placeholder" id="explore-placeholder">
+    <div class="exp-dp">
+      <div class="exp-ph" id="exp-ph">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <p>Selecciona un elemento de la lista</p>
       </div>
-      <div id="explore-detail" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
-        <div class="detail-header">
+      <div id="exp-det" style="display:none;flex-direction:column;height:100%;overflow:hidden">
+        <div class="dh">
           <div>
-            <div class="detail-title" id="detail-title"></div>
-            <div class="detail-subtitle" id="detail-subtitle"></div>
+            <div class="dt" id="det-title"></div>
+            <div class="ds" id="det-sub"></div>
           </div>
-          <div class="detail-legend">
-            <span class="leg"><span class="leg-dot" style="background:var(--c1)"></span>En C1</span>
-            <span class="leg"><span class="leg-dot" style="background:var(--c2)"></span>En C2</span>
-            <span class="leg"><span class="leg-dot" style="background:#222;border:1px solid #444"></span>Ausente</span>
+          <div class="df" id="det-filter">
+            <button class="dfb active" data-df="all">Todos</button>
+            <button class="dfb" data-df="c1">Solo C1</button>
+            <button class="dfb" data-df="c2">Solo C2</button>
+          </div>
+          <div class="col-picker-wrap">
+            <button class="btn btn-ghost col-picker-btn" id="cp-btn-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>Columnas
+            </button>
+            <div class="col-picker-pop" id="cpp-detail">
+              <div class="cp-header">Columnas <button class="cp-reset" id="cp-reset-detail">Restablecer</button></div>
+              <div class="cp-list" id="cp-list-detail"></div>
+            </div>
+          </div>
+          <div class="dleg">
+            <span class="lg"><span class="ld" style="background:var(--c1)"></span>C1</span>
+            <span class="lg"><span class="ld" style="background:var(--c2)"></span>C2</span>
+            <span class="lg"><span class="ld" style="background:#222;border:1px solid #444"></span>Ausente</span>
           </div>
         </div>
-        <div class="detail-wrap">
-          <table class="detail-table">
-            <thead id="detail-thead"></thead>
-            <tbody id="detail-tbody"></tbody>
+        <div class="dw">
+          <table class="dt-tbl">
+            <thead id="det-thead"></thead>
+            <tbody id="det-tbody"></tbody>
           </table>
         </div>
       </div>
@@ -360,37 +386,39 @@
   </div>
 </div>
 
-<div id="loading-overlay"><div class="spinner"></div></div>
+<div id="lov"><div class="sp"></div></div>
 <div id="toasts"></div>
 
-<div class="modal-bg" id="modal-bg">
+<div class="modal-bg" id="mbg">
   <div class="modal">
-    <h3 id="modal-title">Confirmar</h3>
-    <p id="modal-body"></p>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
-      <button class="btn btn-danger" id="modal-confirm">Confirmar</button>
+    <h3 id="m-title">Confirmar</h3>
+    <p id="m-body"></p>
+    <div class="modal-act">
+      <button class="btn btn-ghost" id="m-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="m-ok">Confirmar</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── Utils ─────────────────────────────────────────────────────────────────
-function setLoading(on) { document.getElementById('loading-overlay').classList.toggle('active', on); }
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Utils
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const $ = id => document.getElementById(id);
+function setLoading(on) { $('lov').classList.toggle('on', on); }
 const ICONS = {
   ok:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
   err: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
 };
 function toast(msg, type='ok', dur=4000) {
   const el = document.createElement('div');
-  el.className = `toast toast-${type}`;
+  el.className = `toast t-${type}`;
   el.innerHTML = `${ICONS[type]}<span>${msg}</span>`;
-  document.getElementById('toasts').appendChild(el);
+  $('toasts').appendChild(el);
   setTimeout(() => el.remove(), dur);
 }
-function esc(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 async function api(url, opts={}) {
   const res = await fetch(url, { headers:{'Content-Type':'application/json'}, ...opts });
   if (!res.ok) { const e = await res.json().catch(()=>({error:res.statusText})); throw new Error(e.error||res.statusText); }
@@ -399,332 +427,528 @@ async function api(url, opts={}) {
 
 // Confirm modal
 let confirmCb = null;
-const modalBg = document.getElementById('modal-bg');
-function showConfirm(title, body, onConfirm, danger=true) {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-body').textContent  = body;
-  const btn = document.getElementById('modal-confirm');
-  btn.className   = `btn ${danger ? 'btn-danger' : 'btn-primary'}`;
-  btn.textContent = danger ? 'Confirmar' : 'Aceptar';
-  confirmCb = onConfirm;
-  modalBg.classList.add('active');
+const mbg = $('mbg');
+function showConfirm(title, body, onOk, danger=true) {
+  $('m-title').textContent = title; $('m-body').textContent = body;
+  const ok = $('m-ok'); ok.className = `btn ${danger?'btn-danger':'btn-primary'}`;
+  ok.textContent = danger ? 'Confirmar' : 'Aceptar';
+  confirmCb = onOk; mbg.classList.add('on');
 }
-document.getElementById('modal-confirm').addEventListener('click', () => {
-  modalBg.classList.remove('active'); if (confirmCb) { confirmCb(); confirmCb = null; }
-});
-document.getElementById('modal-cancel').addEventListener('click',  () => { modalBg.classList.remove('active'); confirmCb=null; });
-modalBg.addEventListener('click', e => { if (e.target===modalBg) { modalBg.classList.remove('active'); confirmCb=null; } });
+$('m-ok').addEventListener('click',     () => { mbg.classList.remove('on'); if (confirmCb) { confirmCb(); confirmCb=null; } });
+$('m-cancel').addEventListener('click', () => { mbg.classList.remove('on'); confirmCb=null; });
+mbg.addEventListener('click', e => { if (e.target===mbg) { mbg.classList.remove('on'); confirmCb=null; } });
 
-// ── Main tab switching ────────────────────────────────────────────────────
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Column manager (localStorage-backed, drag-to-reorder)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class ColMgr {
+  constructor(key, defaults) {
+    this.key = key;
+    this.defaults = defaults;
+    this.cols = this._load();
+  }
+  _load() {
+    try {
+      const raw = localStorage.getItem(this.key);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        const out = saved.map(s => {
+          const d = this.defaults.find(x => x.id === s.id);
+          return d ? { ...d, visible: s.visible } : null;
+        }).filter(Boolean);
+        // add any new defaults not in saved
+        this.defaults.forEach(d => { if (!out.find(c => c.id === d.id)) out.push({...d}); });
+        return out;
+      }
+    } catch(e) {}
+    return this.defaults.map(d => ({...d}));
+  }
+  save() {
+    localStorage.setItem(this.key, JSON.stringify(this.cols.map(c => ({id:c.id, visible:c.visible}))));
+  }
+  reset() { localStorage.removeItem(this.key); this.cols = this.defaults.map(d=>({...d})); }
+  get visible() { return this.cols.filter(c => c.visible); }
+  toggle(id) {
+    const c = this.cols.find(x => x.id===id);
+    if (c && !c.fixed) { c.visible = !c.visible; this.save(); }
+  }
+  move(fromIdx, toIdx) {
+    const [c] = this.cols.splice(fromIdx, 1);
+    this.cols.splice(toIdx, 0, c);
+    this.save();
+  }
+}
+
+function buildColPicker(mgr, listEl, onChange) {
+  function render() {
+    listEl.innerHTML = mgr.cols.map((c, i) => `
+      <div class="cp-item${c.fixed?' fixed':''}" draggable="${!c.fixed}" data-idx="${i}">
+        <span class="cp-drag">⠿</span>
+        <label style="display:flex;align-items:center;gap:.4rem;flex:1;cursor:pointer">
+          <input type="checkbox" ${c.visible?'checked':''} data-id="${c.id}" style="display:inline-block;width:13px;height:13px;cursor:pointer;accent-color:var(--g)">
+          <span class="cp-label">${c.label}</span>
+        </label>
+      </div>`).join('');
+
+    let dragIdx = null;
+    listEl.querySelectorAll('.cp-item[draggable=true]').forEach(el => {
+      el.addEventListener('dragstart', e => { dragIdx = +el.dataset.idx; el.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+      el.addEventListener('dragend',   () => { el.classList.remove('dragging'); listEl.querySelectorAll('.cp-item').forEach(x=>x.classList.remove('drag-over')); });
+      el.addEventListener('dragover',  e => { e.preventDefault(); el.classList.add('drag-over'); });
+      el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+      el.addEventListener('drop', e => {
+        e.preventDefault(); el.classList.remove('drag-over');
+        const toIdx = +el.dataset.idx;
+        if (dragIdx !== null && dragIdx !== toIdx) { mgr.move(dragIdx, toIdx); render(); onChange(); }
+        dragIdx = null;
+      });
+    });
+
+    listEl.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      cb.addEventListener('change', () => { mgr.toggle(cb.dataset.id); onChange(); });
+    });
+  }
+  render();
+  return render;
+}
+
+// Close pickers on outside click
+document.addEventListener('click', e => {
+  document.querySelectorAll('.col-picker-pop.open').forEach(p => {
+    if (!p.parentElement.contains(e.target)) p.classList.remove('open');
+  });
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Main tab switching
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 document.querySelectorAll('.mtab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const tab = btn.dataset.tab;
-    document.getElementById('tab-missing').style.display = tab==='missing' ? 'flex' : 'none';
-    document.getElementById('tab-explore').style.display = tab==='explore' ? 'flex' : 'none';
-    if (tab === 'explore' && !exploreLoaded) loadExplore();
+    $('tab-missing').style.display = tab==='missing' ? 'flex' : 'none';
+    $('tab-explore').style.display = tab==='explore' ? 'flex' : 'none';
+    if (tab==='explore' && !exploreLoaded) loadExplore();
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TAB 1 — Missing albums
-// ══════════════════════════════════════════════════════════════════════════
-let allAlbums = [], filtered1 = [], selected = new Set();
-let sortCol = 'artist', sortDir = 1;
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const MISSING_DEFAULTS = [
+  { id:'cover',       label:'Carátula',  visible:true,  fixed:false, sortable:false },
+  { id:'artist',      label:'Artista',   visible:true,  fixed:false, sortable:true  },
+  { id:'title',       label:'Álbum',     visible:true,  fixed:false, sortable:true  },
+  { id:'year',        label:'Año',       visible:true,  fixed:false, sortable:true  },
+  { id:'genre',       label:'Género',    visible:true,  fixed:false, sortable:true  },
+  { id:'label',       label:'Sello',     visible:true,  fixed:false, sortable:true  },
+  { id:'path',        label:'Ruta C2',   visible:false, fixed:false, sortable:false },
+  { id:'file_count',  label:'Archivos',  visible:false, fixed:false, sortable:true  },
+  { id:'audio_count', label:'Audio',     visible:false, fixed:false, sortable:true  },
+  { id:'actions',     label:'Acciones',  visible:true,  fixed:true,  sortable:false },
+];
+const missingCM = new ColMgr('cols_missing', MISSING_DEFAULTS);
 
-const tbody      = document.getElementById('albums-body');
-const emptyState = document.getElementById('empty-state');
-const checkAll   = document.getElementById('check-all');
+let allAlbums = [], filteredM = [], selected = new Set();
+let sortColM = 'artist', sortDirM = 1;
+
+const renderMissingPicker = buildColPicker(missingCM, $('cp-list-missing'), () => renderMissing());
+
+$('cp-btn-missing').addEventListener('click', e => { e.stopPropagation(); $('cpp-missing').classList.toggle('open'); });
+$('cp-reset-missing').addEventListener('click', () => { missingCM.reset(); renderMissingPicker(); renderMissing(); });
 
 async function loadStats() {
   const s = await api('/api/stats');
-  document.getElementById('s-c1').textContent      = s.collection1.toLocaleString();
-  document.getElementById('s-c2').textContent      = s.collection2.toLocaleString();
-  document.getElementById('s-artists').textContent = s.artists.toLocaleString();
-  document.getElementById('s-missing').textContent = s.missing.toLocaleString();
+  $('s-c1').textContent      = s.collection1.toLocaleString();
+  $('s-c2').textContent      = s.collection2.toLocaleString();
+  $('s-artists').textContent = s.artists.toLocaleString();
+  $('s-missing').textContent = s.missing.toLocaleString();
 }
 
-async function loadAlbums() {
+async function loadMissing() {
   setLoading(true);
   try {
     const [albums] = await Promise.all([api('/api/albums/missing'), loadStats()]);
-    allAlbums = albums; selected.clear(); applyFilter1();
+    allAlbums = albums; selected.clear(); applyFilterM();
   } catch(e) { toast(`Error al cargar: ${e.message}`, 'err'); }
   finally { setLoading(false); }
 }
 
-function applyFilter1() {
-  const q = document.getElementById('search').value.toLowerCase().trim();
-  filtered1 = q ? allAlbums.filter(a =>
+function applyFilterM() {
+  const q = $('search').value.toLowerCase().trim();
+  filteredM = q ? allAlbums.filter(a =>
     (a.artist||'').toLowerCase().includes(q) || (a.title||'').toLowerCase().includes(q) ||
     (a.genre||'').toLowerCase().includes(q)  || (a.label||'').toLowerCase().includes(q)
   ) : [...allAlbums];
-  sortFiltered1();
+  sortM();
 }
-
-function sortFiltered1() {
-  filtered1.sort((a,b) => {
-    let va=a[sortCol]??'', vb=b[sortCol]??'';
-    if (sortCol==='year') { va=va||0; vb=vb||0; return sortDir*(va-vb); }
-    return sortDir * String(va).localeCompare(String(vb), 'es', {sensitivity:'base'});
+function sortM() {
+  filteredM.sort((a,b) => {
+    let va=a[sortColM]??'', vb=b[sortColM]??'';
+    if (sortColM==='year'||sortColM==='file_count'||sortColM==='audio_count') { va=va||0; vb=vb||0; return sortDirM*(va-vb); }
+    return sortDirM*String(va).localeCompare(String(vb),'es',{sensitivity:'base'});
   });
-  renderTable1();
+  renderMissing();
 }
 
-function renderTable1() {
-  if (!filtered1.length) {
-    tbody.innerHTML = ''; emptyState.style.display = ''; updateSelUI(); return;
+function coverUrl(row, pathKey='path') {
+  return `/api/albums/cover?path=${encodeURIComponent(row[pathKey]||'')}&artist=${encodeURIComponent(row.artist||'')}&album=${encodeURIComponent(row.title||'')}&mbid=${encodeURIComponent(row.mbid||'')}`;
+}
+
+function renderMissing() {
+  const vis = missingCM.visible;
+  const tbody = $('missing-tbody'), empty = $('missing-empty');
+
+  // Build header
+  $('missing-thead').innerHTML = '<tr>' +
+    '<th><label class="cbl"><input type="checkbox" id="check-all"><span class="cb-box"></span></label></th>' +
+    vis.map(c => c.id === 'actions' ? '<th style="width:64px">Acc.</th>' :
+      `<th class="${c.sortable?'sortable':''} ${sortColM===c.id?(sortDirM===1?'sorted-asc':'sorted-desc'):''}" data-col="${c.id}">${c.label}</th>`
+    ).join('') + '</tr>';
+
+  // Restore sort listeners
+  $('missing-thead').querySelectorAll('th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (sortColM===col) sortDirM*=-1; else { sortColM=col; sortDirM=1; }
+      sortM();
+    });
+  });
+  // Restore check-all
+  const ca = $('check-all');
+  if (ca) {
+    ca.checked = filteredM.length > 0 && filteredM.every(a => selected.has(a.id));
+    ca.indeterminate = selected.size > 0 && !ca.checked;
+    ca.addEventListener('change', () => { filteredM.forEach(a => ca.checked ? selected.add(a.id) : selected.delete(a.id)); renderMissing(); });
   }
-  emptyState.style.display = 'none';
-  tbody.innerHTML = filtered1.map(a => `
-    <tr data-id="${a.id}" class="${selected.has(a.id)?'checked':''}">
-      <td><label class="cb-label"><input type="checkbox" class="row-cb" data-id="${a.id}" ${selected.has(a.id)?'checked':''}><span class="cb-box"></span></label></td>
-      <td class="td-artist" title="${esc(a.artist)}">${esc(a.artist)}</td>
-      <td class="td-title"  title="${esc(a.title)}">${esc(a.title)}</td>
-      <td class="td-year">${a.year||'—'}</td>
-      <td class="td-genre" title="${esc(a.genre)}">${esc(a.genre)||'—'}</td>
-      <td class="td-label" title="${esc(a.label)}">${esc(a.label)||'—'}</td>
-      <td><div class="actions">
-        <button class="btn-icon btn-icon-copy" data-id="${a.id}" title="Copiar a temp/auto-dietpi">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-        </button>
-        <button class="btn-icon btn-icon-del" data-id="${a.id}" title="Eliminar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-          </svg>
-        </button>
-      </div></td>
-    </tr>`).join('');
+
+  if (!filteredM.length) { tbody.innerHTML=''; empty.style.display=''; updateSelUI(); return; }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filteredM.map(a => {
+    const cells = vis.map(c => {
+      switch(c.id) {
+        case 'cover':
+          return `<td style="width:50px;padding:.25rem .5rem"><img class="cover-thumb" src="${coverUrl(a)}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'" alt=""><div class="cover-ph" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div></td>`;
+        case 'artist': return `<td class="td-artist" title="${esc(a.artist)}">${esc(a.artist)}</td>`;
+        case 'title':  return `<td class="td-title"  title="${esc(a.title)}">${esc(a.title)}</td>`;
+        case 'year':   return `<td class="td-year">${a.year||'—'}</td>`;
+        case 'genre':  return `<td class="td-genre"  title="${esc(a.genre)}">${esc(a.genre)||'—'}</td>`;
+        case 'label':  return `<td class="td-label"  title="${esc(a.label)}">${esc(a.label)||'—'}</td>`;
+        case 'path':   return `<td class="td-path"   title="${esc(a.path)}">${esc(a.path)||'—'}</td>`;
+        case 'file_count':  return `<td class="td-num">${a.file_count??'—'}</td>`;
+        case 'audio_count': return `<td class="td-num">${a.audio_count??'—'}</td>`;
+        case 'actions': return `<td><div class="ai">
+          <button class="bi bi-cp" data-id="${a.id}" title="Copiar a temp/auto-dietpi">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="bi bi-dl" data-id="${a.id}" title="Eliminar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+            </svg>
+          </button>
+        </div></td>`;
+        default: return '<td>—</td>';
+      }
+    }).join('');
+    return `<tr data-id="${a.id}" class="${selected.has(a.id)?'checked':''}">
+      <td><label class="cbl"><input type="checkbox" class="rcb" data-id="${a.id}" ${selected.has(a.id)?'checked':''}><span class="cb-box"></span></label></td>
+      ${cells}</tr>`;
+  }).join('');
   updateSelUI();
 }
 
 function updateSelUI() {
   const n = selected.size;
-  document.getElementById('sel-count').textContent = n ? `${n} seleccionado${n!==1?'s':''}` : '';
-  document.getElementById('btn-copy-sel').disabled = n === 0;
-  checkAll.checked = filtered1.length > 0 && filtered1.every(a => selected.has(a.id));
-  checkAll.indeterminate = n > 0 && !checkAll.checked;
+  $('sel-count').textContent = n ? `${n} sel.` : '';
+  $('btn-copy-sel').disabled = n===0;
+  const ca = $('check-all');
+  if (ca) {
+    ca.checked = filteredM.length>0 && filteredM.every(a=>selected.has(a.id));
+    ca.indeterminate = n>0 && !ca.checked;
+  }
 }
 
-tbody.addEventListener('change', e => {
-  const cb = e.target.closest('.row-cb'); if (!cb) return;
+$('missing-tbody').addEventListener('change', e => {
+  const cb = e.target.closest('.rcb'); if (!cb) return;
   const id = +cb.dataset.id;
   cb.checked ? selected.add(id) : selected.delete(id);
-  tbody.querySelector(`tr[data-id="${id}"]`)?.classList.toggle('checked', cb.checked);
+  $('missing-tbody').querySelector(`tr[data-id="${id}"]`)?.classList.toggle('checked', cb.checked);
   updateSelUI();
 });
 
-tbody.addEventListener('click', e => {
-  const copyBtn = e.target.closest('.btn-icon-copy');
-  const delBtn  = e.target.closest('.btn-icon-del');
-  if (copyBtn) {
-    const id = +copyBtn.dataset.id, a = allAlbums.find(x=>x.id===id);
-    showConfirm('Copiar álbum', `¿Copiar "${a?.title}" a temp/auto-dietpi?`, () => copyAlbums([id]), false);
-  }
-  if (delBtn) {
-    const id = +delBtn.dataset.id, a = allAlbums.find(x=>x.id===id);
-    showConfirm('Eliminar álbum', `¿Eliminar "${a?.title}" de ${a?.artist}? Se borrarán los archivos.`, () => deleteAlbum(id));
-  }
+$('missing-tbody').addEventListener('click', e => {
+  const cp = e.target.closest('.bi-cp');
+  const dl = e.target.closest('.bi-dl');
+  if (cp) { const id=+cp.dataset.id, a=allAlbums.find(x=>x.id===id);
+    showConfirm('Copiar álbum', `¿Copiar "${a?.title}" a temp/auto-dietpi?`, ()=>copyAlbums([id]), false); }
+  if (dl) { const id=+dl.dataset.id, a=allAlbums.find(x=>x.id===id);
+    showConfirm('Eliminar álbum', `¿Eliminar "${a?.title}" de ${a?.artist}?\nBorrará los archivos de C2.`, ()=>deleteAlbum(id)); }
 });
 
-document.querySelectorAll('thead th[data-col]').forEach(th => {
-  th.addEventListener('click', () => {
-    const col = th.dataset.col;
-    if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=1; }
-    document.querySelectorAll('thead th').forEach(t => t.classList.remove('sorted-asc','sorted-desc'));
-    th.classList.add(sortDir===1 ? 'sorted-asc' : 'sorted-desc');
-    sortFiltered1();
-  });
-});
+$('btn-sel-all').addEventListener('click', () => { filteredM.forEach(a=>selected.add(a.id)); renderMissing(); });
+$('btn-desel').addEventListener('click',   () => { selected.clear(); renderMissing(); });
 
-checkAll.addEventListener('change', () => {
-  filtered1.forEach(a => checkAll.checked ? selected.add(a.id) : selected.delete(a.id));
-  renderTable1();
-});
-document.getElementById('btn-select-all').addEventListener('click', () => { filtered1.forEach(a=>selected.add(a.id)); renderTable1(); });
-document.getElementById('btn-deselect-all').addEventListener('click', () => { selected.clear(); renderTable1(); });
+let debM;
+$('search').addEventListener('input', () => { clearTimeout(debM); debM=setTimeout(applyFilterM, 200); });
 
-let debounceTimer;
-document.getElementById('search').addEventListener('input', () => {
-  clearTimeout(debounceTimer); debounceTimer = setTimeout(applyFilter1, 200);
-});
-
-document.getElementById('btn-copy-sel').addEventListener('click', () => {
+$('btn-copy-sel').addEventListener('click', () => {
   const ids = [...selected];
-  showConfirm('Copiar selección',
-    `¿Copiar ${ids.length} álbum${ids.length!==1?'es':''} a temp/auto-dietpi?`,
-    () => copyAlbums(ids), false);
+  showConfirm('Copiar selección', `¿Copiar ${ids.length} álbumes a temp/auto-dietpi?`, ()=>copyAlbums(ids), false);
 });
 
 async function copyAlbums(ids) {
   setLoading(true);
   try {
-    const results = await api('/api/albums/copy', { method:'POST', body:JSON.stringify({ids}) });
-    const ok = results.filter(r=>r.success), err = results.filter(r=>!r.success);
-    if (ok.length)  toast(`${ok.length} álbum${ok.length!==1?'es':''} copiado${ok.length!==1?'s':''} a temp/auto-dietpi.`, 'ok');
-    if (err.length) toast(`${err.length} error${err.length!==1?'es':''}: ${err.map(r=>r.error).join(', ')}`, 'err', 7000);
-    selected.clear(); await loadAlbums();
-  } catch(e) { toast(`Error al copiar: ${e.message}`, 'err'); setLoading(false); }
+    const res = await api('/api/albums/copy', {method:'POST', body:JSON.stringify({ids})});
+    const ok=res.filter(r=>r.success), err=res.filter(r=>!r.success);
+    if (ok.length)  toast(`${ok.length} álbum${ok.length!==1?'es':''} copiado${ok.length!==1?'s':''}.`, 'ok');
+    if (err.length) toast(`${err.length} errores: ${err.map(r=>r.error).join(', ')}`, 'err', 7000);
+    selected.clear(); await loadMissing();
+    // bust explore cache
+    Object.keys(expCache).forEach(k => delete expCache[k]);
+    Object.keys(detCache).forEach(k => delete detCache[k]);
+  } catch(e) { toast(`Error: ${e.message}`, 'err'); setLoading(false); }
 }
 
 async function deleteAlbum(id) {
   setLoading(true);
   try {
-    await api(`/api/albums/${id}`, { method:'DELETE' });
-    selected.delete(id); toast('Álbum eliminado.', 'ok'); await loadAlbums();
+    await api(`/api/albums/${id}`, {method:'DELETE'});
+    selected.delete(id); toast('Álbum eliminado.', 'ok'); await loadMissing();
   } catch(e) { toast(`Error: ${e.message}`, 'err'); setLoading(false); }
 }
 
-document.getElementById('btn-refresh').addEventListener('click', () => {
-  loadAlbums();
-  if (exploreLoaded) loadExplore();
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// TAB 2 — Explore
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const DETAIL_DEFAULTS = [
+  { id:'cover',      label:'Carátula',  visible:true,  fixed:false, sortable:false },
+  { id:'title',      label:'Álbum',     visible:true,  fixed:false, sortable:true  },
+  { id:'artist',     label:'Artista',   visible:false, fixed:false, sortable:true  }, // only genres/labels
+  { id:'year',       label:'Año',       visible:true,  fixed:false, sortable:true  },
+  { id:'genre',      label:'Género',    visible:true,  fixed:false, sortable:true  },
+  { id:'label',      label:'Sello',     visible:true,  fixed:false, sortable:true  },
+  { id:'path_c1',    label:'Ruta C1',   visible:false, fixed:false, sortable:false },
+  { id:'path_c2',    label:'Ruta C2',   visible:false, fixed:false, sortable:false },
+  { id:'files_c1',   label:'Arch. C1',  visible:false, fixed:false, sortable:true  },
+  { id:'files_c2',   label:'Arch. C2',  visible:false, fixed:false, sortable:true  },
+  { id:'audio_c1',   label:'Audio C1',  visible:false, fixed:false, sortable:true  },
+  { id:'audio_c2',   label:'Audio C2',  visible:false, fixed:false, sortable:true  },
+  { id:'in_c1',      label:'C1',        visible:true,  fixed:false, sortable:true  },
+  { id:'in_c2',      label:'C2',        visible:true,  fixed:false, sortable:true  },
+  { id:'actions',    label:'Copiar',    visible:true,  fixed:true,  sortable:false },
+];
+const detailCM = new ColMgr('cols_detail', DETAIL_DEFAULTS);
+const renderDetailPicker = buildColPicker(detailCM, $('cp-list-detail'), () => {
+  if (currentDetailRows.length) renderDetail(currentDetailRows);
 });
+$('cp-btn-detail').addEventListener('click', e => { e.stopPropagation(); $('cpp-detail').classList.toggle('open'); });
+$('cp-reset-detail').addEventListener('click', () => { detailCM.reset(); renderDetailPicker(); if (currentDetailRows.length) renderDetail(currentDetailRows); });
 
-// ══════════════════════════════════════════════════════════════════════════
-// TAB 2 — Explore (artists / genres / labels)
-// ══════════════════════════════════════════════════════════════════════════
-let exploreData     = [];
-let exploreFiltered = [];
-let exploreView     = 'artists';
-let activeItem      = null;
-let exploreLoaded   = false;
+// Caches
+const expCache = {};  // view → list data
+const detCache = {};  // `${view}:${name}` → rows
 
-const exploreListEl    = document.getElementById('explore-list');
-const explorePlaceholder = document.getElementById('explore-placeholder');
-const exploreDetailEl  = document.getElementById('explore-detail');
+let expView = 'artists', activeItem = null, exploreLoaded = false;
+let currentDetailRows = [], detailFilter = 'all';
 
 document.querySelectorAll('.etab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.etab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    exploreView = btn.dataset.view;
-    activeItem  = null;
-    explorePlaceholder.style.display = '';
-    exploreDetailEl.style.display    = 'none';
+    expView = btn.dataset.view;
+    activeItem = null; currentDetailRows = [];
+    $('exp-ph').style.display = ''; $('exp-det').style.display = 'none';
     loadExplore();
   });
 });
 
-async function loadExplore() {
-  exploreListEl.innerHTML = '<div class="detail-empty">Cargando…</div>';
+async function loadExplore(force=false) {
+  if (!force && expCache[expView]) {
+    renderExpList(expCache[expView]); return;
+  }
+  $('exp-list').innerHTML = '<div class="det-empty">Cargando…</div>';
   try {
-    exploreData   = await api(`/api/explore?view=${exploreView}`);
+    const data = await api(`/api/explore?view=${expView}`);
+    expCache[expView] = data;
     exploreLoaded = true;
-    document.getElementById('explore-search').value = '';
-    applyExploreFilter();
+    $('exp-search').value = '';
+    renderExpList(data);
   } catch(e) {
-    exploreListEl.innerHTML = `<div class="detail-empty" style="color:var(--red)">Error: ${esc(e.message)}</div>`;
+    $('exp-list').innerHTML = `<div class="det-empty" style="color:var(--red)">Error: ${esc(e.message)}</div>`;
   }
 }
 
-function applyExploreFilter() {
-  const q = document.getElementById('explore-search').value.toLowerCase().trim();
-  exploreFiltered = q
-    ? exploreData.filter(r => (r.name||'').toLowerCase().includes(q))
-    : [...exploreData];
-  document.getElementById('explore-count').textContent =
-    `${exploreFiltered.length.toLocaleString()} / ${exploreData.length.toLocaleString()}`;
-  renderExploreList();
-}
-
-function renderExploreList() {
-  if (!exploreFiltered.length) {
-    exploreListEl.innerHTML = '<div class="detail-empty">Sin resultados</div>'; return;
-  }
-  exploreListEl.innerHTML = exploreFiltered.map(r => `
-    <div class="explore-item ${activeItem===r.name?'active':''}" data-name="${esc(r.name)}">
+function renderExpList(data) {
+  const q = $('exp-search').value.toLowerCase().trim();
+  const filtered = q ? data.filter(r => (r.name||'').toLowerCase().includes(q)) : data;
+  $('exp-count').textContent = `${filtered.length.toLocaleString()} / ${data.length.toLocaleString()}`;
+  if (!filtered.length) { $('exp-list').innerHTML = '<div class="det-empty">Sin resultados</div>'; return; }
+  $('exp-list').innerHTML = filtered.map(r => `
+    <div class="ei${activeItem===r.name?' active':''}" data-name="${esc(r.name)}">
       <span class="ei-name" title="${esc(r.name)}">${esc(r.name)}</span>
-      <span class="ei-counts">
-        ${r.c1_count ? `<span class="ei-c ei-c1" title="En C1">${r.c1_count}</span>` : ''}
-        ${r.c2_count ? `<span class="ei-c ei-c2" title="En C2">${r.c2_count}</span>` : ''}
+      <span class="ei-cs">
+        ${r.c1_count?`<span class="ei-c ei-c1">${r.c1_count}</span>`:''}
+        ${r.c2_count?`<span class="ei-c ei-c2">${r.c2_count}</span>`:''}
       </span>
     </div>`).join('');
 }
 
-exploreListEl.addEventListener('click', e => {
-  const item = e.target.closest('.explore-item'); if (!item) return;
+$('exp-list').addEventListener('click', e => {
+  const item = e.target.closest('.ei'); if (!item) return;
   activeItem = item.dataset.name;
-  renderExploreList();
-  loadDetail(activeItem);
+  renderExpList(expCache[expView] || []);
+  openDetail(activeItem);
 });
 
-let exploreDebounce;
-document.getElementById('explore-search').addEventListener('input', () => {
-  clearTimeout(exploreDebounce); exploreDebounce = setTimeout(applyExploreFilter, 200);
+let expDeb;
+$('exp-search').addEventListener('input', () => {
+  clearTimeout(expDeb); expDeb = setTimeout(() => renderExpList(expCache[expView]||[]), 200);
 });
 
-async function loadDetail(name) {
-  explorePlaceholder.style.display = 'none';
-  exploreDetailEl.style.display    = 'flex';
+// Detail filter buttons
+document.querySelectorAll('.dfb').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.dfb').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    detailFilter = btn.dataset.df;
+    if (currentDetailRows.length) renderDetail(currentDetailRows);
+  });
+});
 
-  const detailTitle    = document.getElementById('detail-title');
-  const detailSubtitle = document.getElementById('detail-subtitle');
-  const detailThead    = document.getElementById('detail-thead');
-  const detailTbody    = document.getElementById('detail-tbody');
+async function openDetail(name) {
+  $('exp-ph').style.display   = 'none';
+  $('exp-det').style.display  = 'flex';
+  $('det-title').textContent  = name;
+  $('det-sub').textContent    = '';
+  $('det-tbody').innerHTML    = '<tr><td colspan="20" class="det-empty">Cargando…</td></tr>';
 
-  detailTitle.textContent    = name;
-  detailSubtitle.textContent = { artists:'Artista', genres:'Género', labels:'Sello' }[exploreView] || '';
-  detailTbody.innerHTML      = '<tr><td colspan="6" class="detail-empty">Cargando…</td></tr>';
-
+  const key = `${expView}:${name}`;
   try {
-    const rows = await api(`/api/explore/albums?view=${exploreView}&name=${encodeURIComponent(name)}`);
-
-    const dotC1 = on => `<span class="col-dot ${on ? 'on-c1' : 'dot-off'}"></span>`;
-    const dotC2 = on => `<span class="col-dot ${on ? 'on-c2' : 'dot-off'}"></span>`;
-
-    if (exploreView === 'artists') {
-      detailThead.innerHTML = `<tr>
-        <th style="width:36%">Álbum</th><th style="width:7%">Año</th>
-        <th style="width:14%">Género</th><th style="width:16%">Sello</th>
-        <th style="width:55px;text-align:center">C1</th>
-        <th style="width:55px;text-align:center">C2</th>
-      </tr>`;
-      detailTbody.innerHTML = rows.length ? rows.map(r => `
-        <tr class="${!r.in_c1 && r.in_c2 ? 'only-c2' : ''}">
-          <td class="dt-title" title="${esc(r.title)}">${esc(r.title)}</td>
-          <td class="dt-sub">${r.year||'—'}</td>
-          <td class="dt-sub" title="${esc(r.genre)}">${esc(r.genre)||'—'}</td>
-          <td class="dt-sub" title="${esc(r.label)}">${esc(r.label)||'—'}</td>
-          <td style="text-align:center">${dotC1(r.in_c1)}</td>
-          <td style="text-align:center">${dotC2(r.in_c2)}</td>
-        </tr>`).join('') : '<tr><td colspan="6" class="detail-empty">Sin álbumes</td></tr>';
-
-    } else {
-      const extraCol = exploreView === 'genres' ? 'Sello' : 'Género';
-      const extraKey = exploreView === 'genres' ? 'label' : 'genre';
-      detailThead.innerHTML = `<tr>
-        <th style="width:22%">Artista</th><th style="width:30%">Álbum</th>
-        <th style="width:7%">Año</th><th style="width:18%">${extraCol}</th>
-        <th style="width:55px;text-align:center">C1</th>
-        <th style="width:55px;text-align:center">C2</th>
-      </tr>`;
-      detailTbody.innerHTML = rows.length ? rows.map(r => `
-        <tr class="${!r.in_c1 && r.in_c2 ? 'only-c2' : ''}">
-          <td class="dt-text" title="${esc(r.artist)}">${esc(r.artist)}</td>
-          <td class="dt-title" title="${esc(r.title)}">${esc(r.title)}</td>
-          <td class="dt-sub">${r.year||'—'}</td>
-          <td class="dt-sub" title="${esc(r[extraKey])}">${esc(r[extraKey])||'—'}</td>
-          <td style="text-align:center">${dotC1(r.in_c1)}</td>
-          <td style="text-align:center">${dotC2(r.in_c2)}</td>
-        </tr>`).join('') : '<tr><td colspan="6" class="detail-empty">Sin álbumes</td></tr>';
-    }
-
-    const total   = rows.length;
-    const missing = rows.filter(r => !r.in_c1 && r.in_c2).length;
-    detailSubtitle.textContent =
-      `${total} álbume${total!==1?'s':''}` +
-      (missing ? ` · ${missing} solo en C2` : ' · completo en C1');
-
+    const rows = detCache[key] ?? await api(`/api/explore/albums?view=${expView}&name=${encodeURIComponent(name)}`);
+    detCache[key] = rows;
+    currentDetailRows = rows;
+    renderDetail(rows);
   } catch(e) {
-    detailTbody.innerHTML = `<tr><td colspan="6" class="detail-empty" style="color:var(--red)">Error: ${esc(e.message)}</td></tr>`;
+    $('det-tbody').innerHTML = `<tr><td colspan="20" class="det-empty" style="color:var(--red)">Error: ${esc(e.message)}</td></tr>`;
   }
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────
-loadAlbums();
+function renderDetail(rows) {
+  let filtered = rows;
+  if (detailFilter==='c1')  filtered = rows.filter(r => r.in_c1);
+  if (detailFilter==='c2')  filtered = rows.filter(r => r.in_c2);
+
+  const vis   = detailCM.visible;
+  const isArt = expView==='artists';
+  const visF  = vis.filter(c => isArt ? c.id!=='artist' : true);
+
+  // header
+  $('det-thead').innerHTML = '<tr>' + visF.map(c =>
+    c.id==='in_c1'  ? '<th style="width:44px;text-align:center">C1</th>' :
+    c.id==='in_c2'  ? '<th style="width:44px;text-align:center">C2</th>' :
+    c.id==='actions'? '<th style="width:52px">Copiar</th>' :
+    c.id==='cover'  ? '<th style="width:48px"></th>' :
+    `<th>${c.label}</th>`
+  ).join('') + '</tr>';
+
+  if (!filtered.length) {
+    $('det-tbody').innerHTML = `<tr><td colspan="${visF.length}" class="det-empty">Sin resultados</td></tr>`;
+    updateDetSub(rows);
+    return;
+  }
+
+  $('det-tbody').innerHTML = filtered.map(r => {
+    const rowClass = !r.in_c1 && r.in_c2 ? 'oc2' : '';
+    // pick cover path: prefer C1, fallback C2
+    const cvPath  = r.path_c1 || r.path_c2 || '';
+    const cells = visF.map(c => {
+      switch(c.id) {
+        case 'cover':
+          const cu = `/api/albums/cover?path=${encodeURIComponent(cvPath)}&artist=${encodeURIComponent(r.artist||'')}&album=${encodeURIComponent(r.title||'')}`;
+          return `<td style="width:48px;padding:.2rem .4rem"><img class="cover-thumb" src="${cu}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'" alt=""><div class="cover-ph" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div></td>`;
+        case 'title':   return `<td class="dtt" title="${esc(r.title)}">${esc(r.title)}</td>`;
+        case 'artist':  return `<td class="dta" title="${esc(r.artist)}">${esc(r.artist||'—')}</td>`;
+        case 'year':    return `<td class="dts">${r.year||'—'}</td>`;
+        case 'genre':   return `<td class="dts" title="${esc(r.genre)}">${esc(r.genre)||'—'}</td>`;
+        case 'label':   return `<td class="dts" title="${esc(r.label)}">${esc(r.label)||'—'}</td>`;
+        case 'path_c1': return `<td class="dtp fixed-w" title="${esc(r.path_c1)}">${esc(r.path_c1||'—')}</td>`;
+        case 'path_c2': return `<td class="dtp fixed-w" title="${esc(r.path_c2)}">${esc(r.path_c2||'—')}</td>`;
+        case 'files_c1':return `<td class="dtn">${r.files_c1??'—'}</td>`;
+        case 'files_c2':return `<td class="dtn">${r.files_c2??'—'}</td>`;
+        case 'audio_c1':return `<td class="dtn">${r.audio_c1??'—'}</td>`;
+        case 'audio_c2':return `<td class="dtn">${r.audio_c2??'—'}</td>`;
+        case 'in_c1':   return `<td style="text-align:center"><span class="col-dot ${r.in_c1?'on-c1':'dot-off'}"></span></td>`;
+        case 'in_c2':   return `<td style="text-align:center"><span class="col-dot ${r.in_c2?'on-c2':'dot-off'}"></span></td>`;
+        case 'actions':
+          if (!r.in_c1 && r.in_c2 && r.id_c2) {
+            return `<td><button class="bi bi-cp det-copy" data-id="${r.id_c2}" data-title="${esc(r.title)}" title="Copiar a temp">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </button></td>`;
+          }
+          return `<td></td>`;
+        default: return '<td>—</td>';
+      }
+    }).join('');
+    return `<tr class="${rowClass}">${cells}</tr>`;
+  }).join('');
+
+  updateDetSub(rows);
+
+  // Copy buttons in detail
+  $('det-tbody').querySelectorAll('.det-copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = +btn.dataset.id, title = btn.dataset.title;
+      showConfirm('Copiar álbum', `¿Copiar "${title}" a temp/auto-dietpi?`, async () => {
+        setLoading(true);
+        try {
+          const res = await api('/api/albums/copy', {method:'POST', body:JSON.stringify({ids:[id]})});
+          const ok = res.filter(r=>r.success), err = res.filter(r=>!r.success);
+          if (ok.length) toast(`"${title}" copiado a temp/auto-dietpi.`, 'ok');
+          if (err.length) toast(`Error: ${err[0]?.error}`, 'err');
+          // invalidate caches
+          delete detCache[`${expView}:${activeItem}`];
+          delete expCache[expView];
+          await loadMissing(); await loadStats();
+          await loadExplore(true);
+          openDetail(activeItem);
+        } catch(e) { toast(`Error: ${e.message}`, 'err'); }
+        finally { setLoading(false); }
+      }, false);
+    });
+  });
+}
+
+function updateDetSub(rows) {
+  const total   = rows.length;
+  const miss    = rows.filter(r => !r.in_c1 && r.in_c2).length;
+  const onlyC1  = rows.filter(r => r.in_c1 && !r.in_c2).length;
+  $('det-sub').textContent =
+    `${total} álbum${total!==1?'s':''}` +
+    (miss   ? ` · ${miss} solo en C2`   : '') +
+    (onlyC1 ? ` · ${onlyC1} solo en C1` : '');
+}
+
+// ── Refresh button ──────────────────────────────────────────────────────────
+$('btn-refresh').addEventListener('click', async () => {
+  // Bust all caches
+  Object.keys(expCache).forEach(k => delete expCache[k]);
+  Object.keys(detCache).forEach(k => delete detCache[k]);
+  currentDetailRows = [];
+  await loadMissing();
+  if (exploreLoaded) {
+    await loadExplore(true);
+    if (activeItem) openDetail(activeItem);
+  }
+});
+
+// ── Init ────────────────────────────────────────────────────────────────────
+renderMissing();  // render headers before data arrives
+loadMissing();
 </script>
 </body>
 </html>

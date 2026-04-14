@@ -103,26 +103,55 @@
   .spacer { flex: 1; }
   .sel-count { color: var(--green-dim); font-size: .8rem; min-width: 6ch; text-align: right; }
 
+  /* ── Column picker ── */
+  .col-picker-wrap { position: relative; }
+  .col-picker-panel {
+    display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 200;
+    background: var(--bg3); border: 1px solid var(--border-hi);
+    box-shadow: 0 8px 32px #000c; border-radius: 5px; padding: .75rem;
+    min-width: 200px;
+  }
+  .col-picker-panel.open { display: block; }
+  .col-picker-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: .5rem; padding-bottom: .4rem; border-bottom: 1px solid var(--border);
+  }
+  .col-picker-header span { color: var(--green-dim); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; }
+  .col-picker-header button { background: none; border: none; cursor: pointer;
+    color: #555; font-family: inherit; font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; }
+  .col-picker-header button:hover { color: var(--green); }
+  .col-picker-list { display: flex; flex-direction: column; gap: 2px; }
+  .col-picker-item {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .3rem .4rem; border-radius: 3px; cursor: grab; user-select: none;
+    border: 1px solid transparent; transition: background .1s;
+  }
+  .col-picker-item:hover { background: #161f16; border-color: var(--border); }
+  .col-picker-item.dragging { opacity: .4; }
+  .col-picker-item.drag-over { border-color: var(--green-dim); background: var(--green-dark); }
+  .col-drag-handle { color: #333; font-size: .9rem; line-height: 1; cursor: grab; }
+  .col-picker-item input[type="checkbox"] { display: none; }
+  .col-cb-box { width: 13px; height: 13px; border: 1px solid #333; border-radius: 2px;
+    background: var(--bg); flex-shrink: 0; position: relative; cursor: pointer; }
+  .col-picker-item input[type="checkbox"]:checked ~ .col-cb-box,
+  .col-cb-box.checked {
+    background: var(--green); border-color: var(--green); box-shadow: var(--green-glow);
+  }
+  .col-cb-box.checked::after { content: ''; position: absolute; left: 3px; top: 1px;
+    width: 4px; height: 7px; border: 2px solid #000; border-top: none; border-left: none; transform: rotate(45deg); }
+  .col-picker-item label { flex: 1; cursor: pointer; color: var(--text); font-size: .8rem; }
+
   /* ── Table ── */
   .table-wrap { overflow: auto; height: calc(100vh - 52px - 42px - 52px); }
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  colgroup col:nth-child(1) { width: 36px; }
-  colgroup col:nth-child(2) { width: 18%; }
-  colgroup col:nth-child(3) { width: 22%; }
-  colgroup col:nth-child(4) { width: 5%; }
-  colgroup col:nth-child(5) { width: 10%; }
-  colgroup col:nth-child(6) { width: 12%; }
-  colgroup col:nth-child(7) { width: 88px; }  /* imported */
-  colgroup col:nth-child(8) { width: 96px; }  /* dup badge */
-  colgroup col:nth-child(9) { width: 100px; } /* actions */
+  table { width: 100%; border-collapse: collapse; }
   thead th {
     position: sticky; top: 0; z-index: 10; background: #0a1a0a;
     color: var(--green-dim); font-size: .7rem; text-transform: uppercase; letter-spacing: .12em;
     font-weight: 600; padding: .5rem .7rem; border-bottom: 1px solid var(--border-hi);
-    text-align: left; white-space: nowrap; user-select: none; cursor: pointer;
+    text-align: left; white-space: nowrap; user-select: none;
   }
-  thead th:first-child, thead th:last-child, thead th:nth-child(7) { cursor: default; }
-  thead th:first-child { text-align: center; }
+  thead th.sortable { cursor: pointer; }
+  thead th:first-child { text-align: center; cursor: default; }
   thead th.sorted-asc::after  { content: ' ↑'; color: var(--green); }
   thead th.sorted-desc::after { content: ' ↓'; color: var(--green); }
 
@@ -133,13 +162,22 @@
   tbody tr.is-dup:hover { background: #1e1608; }
   tbody tr.is-dup.checked { background: #1a1a06; }
 
-  td { padding: .42rem .7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  td:first-child { text-align: center; vertical-align: middle; }
+  td { padding: .42rem .7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+  td:first-child { text-align: center; }
   .td-artist { color: var(--text-hi); font-weight: 500; }
   .td-title  { color: var(--green); }
   .td-year   { color: #888; }
   .td-genre  { color: #6a9e6a; font-size: .8rem; }
   .td-label  { color: #666; font-size: .8rem; }
+  .td-path   { color: #446644; font-size: .72rem; max-width: 300px; }
+  .td-num    { color: #888; text-align: right; }
+
+  /* Cover thumbnail */
+  .cover-thumb { width: 34px; height: 34px; border-radius: 2px; object-fit: cover;
+    border: 1px solid var(--border); background: #111; display: block; }
+  .cover-ph { width: 34px; height: 34px; border-radius: 2px; border: 1px solid var(--border);
+    background: #0d0d0d; display: flex; align-items: center; justify-content: center; color: #222; }
+  .cover-ph svg { width: 14px; height: 14px; }
 
   /* Duplicate badge */
   .badge-dup {
@@ -319,24 +357,30 @@
     </svg>
     Playlist Airsonic
   </button>
+
+  <div class="col-picker-wrap">
+    <button class="btn btn-ghost" id="btn-cols">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+        <line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+        <line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      Cols
+    </button>
+    <div class="col-picker-panel" id="col-picker-panel">
+      <div class="col-picker-header">
+        <span>Columnas</span>
+        <button id="btn-cols-reset">Reset</button>
+      </div>
+      <div class="col-picker-list" id="col-picker-list"></div>
+    </div>
+  </div>
 </div>
 
 <div class="table-wrap">
-  <table>
-    <colgroup><col><col><col><col><col><col><col><col><col></colgroup>
-    <thead>
-      <tr>
-        <th><label class="cb-label"><input type="checkbox" id="check-all"><span class="cb-box"></span></label></th>
-        <th data-col="artist">Artista</th>
-        <th data-col="title">Álbum</th>
-        <th data-col="year">Año</th>
-        <th data-col="genre">Género</th>
-        <th data-col="label">Sello</th>
-        <th data-col="imported">Importado</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
+  <table id="main-table">
+    <thead><tr id="table-head"></tr></thead>
     <tbody id="albums-body"></tbody>
   </table>
   <div class="empty" id="empty-state" style="display:none;">
@@ -402,17 +446,122 @@
 </div>
 
 <script>
+// ── Column manager ─────────────────────────────────────────────────────────
+const TEMP_COL_DEFAULTS = [
+  { id: 'cover',       label: 'Portada',   visible: true,  sortable: false },
+  { id: 'artist',      label: 'Artista',   visible: true,  sortable: true  },
+  { id: 'title',       label: 'Álbum',     visible: true,  sortable: true  },
+  { id: 'year',        label: 'Año',       visible: true,  sortable: true  },
+  { id: 'genre',       label: 'Género',    visible: true,  sortable: true  },
+  { id: 'label',       label: 'Sello',     visible: false, sortable: true  },
+  { id: 'imported',    label: 'Importado', visible: true,  sortable: true  },
+  { id: 'path',        label: 'Ruta',      visible: false, sortable: false },
+  { id: 'file_count',  label: 'Ficheros',  visible: false, sortable: true  },
+  { id: 'audio_count', label: 'Audio',     visible: false, sortable: true  },
+  { id: 'status',      label: 'Estado',    visible: true,  sortable: false },
+];
+
+class ColMgr {
+  constructor(key, defaults) {
+    this._key = key;
+    this._defaults = defaults;
+    this._cols = this._load();
+  }
+  _load() {
+    try {
+      const raw = localStorage.getItem(this._key);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        // Merge: keep saved order/visibility, add any new defaults
+        const byId = Object.fromEntries(saved.map(c => [c.id, c]));
+        const merged = saved.map(c => {
+          const def = this._defaults.find(d => d.id === c.id);
+          return def ? { ...def, visible: c.visible } : null;
+        }).filter(Boolean);
+        this._defaults.forEach(d => {
+          if (!byId[d.id]) merged.push({ ...d });
+        });
+        return merged;
+      }
+    } catch(e) {}
+    return this._defaults.map(d => ({ ...d }));
+  }
+  _save() { localStorage.setItem(this._key, JSON.stringify(this._cols.map(c => ({ id: c.id, visible: c.visible })))); }
+  get cols() { return this._cols; }
+  get visible() { return this._cols.filter(c => c.visible); }
+  toggle(id) {
+    const c = this._cols.find(c => c.id === id);
+    if (c) { c.visible = !c.visible; this._save(); }
+  }
+  move(fromIdx, toIdx) {
+    const arr = this._cols;
+    const [item] = arr.splice(fromIdx, 1);
+    arr.splice(toIdx, 0, item);
+    this._save();
+  }
+  reset() {
+    this._cols = this._defaults.map(d => ({ ...d }));
+    localStorage.removeItem(this._key);
+  }
+}
+
+const colMgr = new ColMgr('temp_cols_v1', TEMP_COL_DEFAULTS);
+
+function buildColPicker(mgr, listEl, onChange) {
+  listEl.innerHTML = '';
+  mgr.cols.forEach((col, idx) => {
+    const item = document.createElement('div');
+    item.className = 'col-picker-item';
+    item.draggable = true;
+    item.dataset.idx = idx;
+    item.innerHTML = `
+      <span class="col-drag-handle">⠿</span>
+      <label style="display:flex;align-items:center;gap:.4rem;flex:1;cursor:pointer;">
+        <span class="col-cb-box ${col.visible ? 'checked' : ''}"></span>
+        <span>${col.label}</span>
+      </label>`;
+
+    const cbBox = item.querySelector('.col-cb-box');
+    item.querySelector('label').addEventListener('click', e => {
+      e.preventDefault();
+      mgr.toggle(col.id);
+      cbBox.classList.toggle('checked', mgr.cols[idx].visible);
+      onChange();
+    });
+
+    item.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', idx);
+      item.classList.add('dragging');
+    });
+    item.addEventListener('dragend', () => item.classList.remove('dragging'));
+    item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      const fromIdx = +e.dataTransfer.getData('text/plain');
+      const toIdx   = +item.dataset.idx;
+      if (fromIdx !== toIdx) { mgr.move(fromIdx, toIdx); buildColPicker(mgr, listEl, onChange); onChange(); }
+    });
+
+    listEl.appendChild(item);
+  });
+}
+
 // ── State ──────────────────────────────────────────────────────────────────
 let allAlbums = [], filtered = [], selected = new Set();
 let sortCol = 'artist', sortDir = 1;
-let filterMode = 'all';  // 'all' | 'dup' | 'unique'
+let filterMode = 'all';
 let confirmCb = null;
 
 // ── DOM ────────────────────────────────────────────────────────────────────
 const tbody       = document.getElementById('albums-body');
+const thead       = document.getElementById('table-head');
 const emptyState  = document.getElementById('empty-state');
 const searchInput = document.getElementById('search');
-const checkAll    = document.getElementById('check-all');
+const checkAll    = document.createElement('input');
+checkAll.type     = 'checkbox';
+checkAll.id       = 'check-all';
 const selCountEl  = document.getElementById('sel-count');
 const btnDeleteSel= document.getElementById('btn-delete-sel');
 const loading     = document.getElementById('loading-overlay');
@@ -461,6 +610,137 @@ async function api(url, opts={}) {
   return res.json();
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────────
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function coverUrl(a) {
+  const params = new URLSearchParams();
+  if (a.path)   params.set('path',   a.path);
+  if (a.artist) params.set('artist', a.artist);
+  if (a.title)  params.set('album',  a.title);
+  if (a.mbid)   params.set('mbid',   a.mbid);
+  return `/api/albums/cover?${params}`;
+}
+
+const PH_COVER = `<div class="cover-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+  <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+</svg></div>`;
+
+const DUP_BADGE = `<span class="badge-dup">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+  </svg>
+  Duplicado
+</span>`;
+
+// ── Table header ───────────────────────────────────────────────────────────
+function rebuildHeader() {
+  const visCols = colMgr.visible;
+  thead.innerHTML = '';
+
+  // Checkbox cell
+  const cbTh = document.createElement('th');
+  cbTh.style.width = '36px';
+  const cbLabel = document.createElement('label');
+  cbLabel.className = 'cb-label';
+  cbLabel.appendChild(checkAll);
+  const cbBox = document.createElement('span');
+  cbBox.className = 'cb-box';
+  cbLabel.appendChild(cbBox);
+  cbTh.appendChild(cbLabel);
+  thead.appendChild(cbTh);
+
+  visCols.forEach(col => {
+    const th = document.createElement('th');
+    th.textContent = col.label;
+    th.dataset.col  = col.id;
+    if (col.sortable) {
+      th.classList.add('sortable');
+      if (sortCol === col.id) th.classList.add(sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
+      th.addEventListener('click', () => {
+        if (sortCol === col.id) sortDir *= -1; else { sortCol = col.id; sortDir = 1; }
+        document.querySelectorAll('thead th').forEach(t => t.classList.remove('sorted-asc','sorted-desc'));
+        th.classList.add(sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
+        sortFiltered();
+      });
+    }
+    thead.appendChild(th);
+  });
+
+  // Actions cell
+  const actTh = document.createElement('th');
+  actTh.style.width = '80px';
+  actTh.textContent = 'Acciones';
+  thead.appendChild(actTh);
+
+  // Sync checkAll state
+  checkAll.addEventListener('change', () => {
+    filtered.forEach(a => checkAll.checked ? selected.add(a.id) : selected.delete(a.id));
+    renderTable();
+  });
+}
+
+// ── Render row cell by column id ───────────────────────────────────────────
+function renderCell(col, a) {
+  switch (col.id) {
+    case 'cover':
+      return `<td style="width:44px;padding:.25rem .5rem;">
+        <img class="cover-thumb" src="${coverUrl(a)}" alt="" loading="lazy"
+          onerror="this.parentNode.innerHTML='${PH_COVER.replace(/'/g,"\\'")}'">`
+      + `</td>`;
+    case 'artist':      return `<td class="td-artist" title="${esc(a.artist)}">${esc(a.artist)}</td>`;
+    case 'title':       return `<td class="td-title"  title="${esc(a.title)}">${esc(a.title)}</td>`;
+    case 'year':        return `<td class="td-year">${a.year||'—'}</td>`;
+    case 'genre':       return `<td class="td-genre" title="${esc(a.genre)}">${esc(a.genre)||'—'}</td>`;
+    case 'label':       return `<td class="td-label" title="${esc(a.label)}">${esc(a.label)||'—'}</td>`;
+    case 'imported':    return `<td>${a.imported ? `<span class="badge-date">${esc(a.imported)}</span>` : '—'}</td>`;
+    case 'path':        return `<td class="td-path" title="${esc(a.path)}">${esc(a.path)}</td>`;
+    case 'file_count':  return `<td class="td-num">${a.file_count??'—'}</td>`;
+    case 'audio_count': return `<td class="td-num">${a.audio_count??'—'}</td>`;
+    case 'status':      return `<td>${a.is_duplicate ? DUP_BADGE : ''}</td>`;
+    default:            return '<td></td>';
+  }
+}
+
+// ── Render table ───────────────────────────────────────────────────────────
+function renderTable() {
+  if (!filtered.length) { tbody.innerHTML=''; emptyState.style.display=''; updateSelUI(); return; }
+  emptyState.style.display = 'none';
+
+  const visCols = colMgr.visible;
+  tbody.innerHTML = filtered.map(a => `
+    <tr data-id="${a.id}" class="${[selected.has(a.id)?'checked':'', a.is_duplicate?'is-dup':''].filter(Boolean).join(' ')}">
+      <td style="text-align:center;vertical-align:middle;"><label class="cb-label"><input type="checkbox" class="row-cb" data-id="${a.id}" ${selected.has(a.id)?'checked':''}><span class="cb-box"></span></label></td>
+      ${visCols.map(col => renderCell(col, a)).join('')}
+      <td><div class="actions">
+        <button class="btn-icon btn-icon-play" data-id="${a.id}"
+                data-artist="${esc(a.artist)}" data-title="${esc(a.title)}"
+                title="Buscar y reproducir en Airsonic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="btn-icon btn-icon-del" data-id="${a.id}" title="Eliminar de temp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </button>
+      </div></td>
+    </tr>`).join('');
+
+  updateSelUI();
+}
+
+function updateSelUI() {
+  const n = selected.size;
+  selCountEl.textContent  = n ? `${n} seleccionado${n!==1?'s':''}` : '';
+  btnDeleteSel.disabled   = n===0;
+  checkAll.checked        = filtered.length>0 && filtered.every(a=>selected.has(a.id));
+  checkAll.indeterminate  = n>0 && !checkAll.checked;
+}
+
 // ── Load data ──────────────────────────────────────────────────────────────
 async function loadAlbums() {
   setLoading(true);
@@ -497,63 +777,12 @@ function applyFilter() {
 function sortFiltered() {
   filtered.sort((a,b) => {
     let va = a[sortCol]??'', vb = b[sortCol]??'';
-    if (sortCol==='year') { va=va||0; vb=vb||0; return sortDir*(va-vb); }
+    if (sortCol==='year'||sortCol==='file_count'||sortCol==='audio_count') {
+      va=va||0; vb=vb||0; return sortDir*(va-vb);
+    }
     return sortDir*String(va).localeCompare(String(vb),'es',{sensitivity:'base'});
   });
   renderTable();
-}
-
-// ── Render ─────────────────────────────────────────────────────────────────
-function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-const DUP_BADGE = `<span class="badge-dup">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-  </svg>
-  Duplicado
-</span>`;
-
-function renderTable() {
-  if (!filtered.length) { tbody.innerHTML=''; emptyState.style.display=''; updateSelUI(); return; }
-  emptyState.style.display = 'none';
-
-  tbody.innerHTML = filtered.map(a => `
-    <tr data-id="${a.id}" class="${[selected.has(a.id)?'checked':'', a.is_duplicate?'is-dup':''].filter(Boolean).join(' ')}">
-      <td><label class="cb-label"><input type="checkbox" class="row-cb" data-id="${a.id}" ${selected.has(a.id)?'checked':''}><span class="cb-box"></span></label></td>
-      <td class="td-artist" title="${esc(a.artist)}">${esc(a.artist)}</td>
-      <td class="td-title"  title="${esc(a.title)}">${esc(a.title)}</td>
-      <td class="td-year">${a.year||'—'}</td>
-      <td class="td-genre" title="${esc(a.genre)}">${esc(a.genre)||'—'}</td>
-      <td class="td-label" title="${esc(a.label)}">${esc(a.label)||'—'}</td>
-      <td>${a.imported ? `<span class="badge-date">${esc(a.imported)}</span>` : '—'}</td>
-      <td>${a.is_duplicate ? DUP_BADGE : ''}</td>
-      <td><div class="actions">
-        <button class="btn-icon btn-icon-play" data-id="${a.id}"
-                data-artist="${esc(a.artist)}" data-title="${esc(a.title)}"
-                title="Buscar y reproducir en Airsonic">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
-          </svg>
-        </button>
-        <button class="btn-icon btn-icon-del" data-id="${a.id}" title="Eliminar de temp">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-          </svg>
-        </button>
-      </div></td>
-    </tr>`).join('');
-
-  updateSelUI();
-}
-
-function updateSelUI() {
-  const n = selected.size;
-  selCountEl.textContent  = n ? `${n} seleccionado${n!==1?'s':''}` : '';
-  btnDeleteSel.disabled   = n===0;
-  checkAll.checked        = filtered.length>0 && filtered.every(a=>selected.has(a.id));
-  checkAll.indeterminate  = n>0 && !checkAll.checked;
 }
 
 // ── Table events ───────────────────────────────────────────────────────────
@@ -569,10 +798,7 @@ tbody.addEventListener('change', e => {
 tbody.addEventListener('click', e => {
   const playBtn = e.target.closest('.btn-icon-play');
   const delBtn  = e.target.closest('.btn-icon-del');
-
-  if (playBtn) {
-    openAirsonicModal(playBtn.dataset.artist, playBtn.dataset.title);
-  }
+  if (playBtn) openAirsonicModal(playBtn.dataset.artist, playBtn.dataset.title);
   if (delBtn) {
     const id = +delBtn.dataset.id;
     const a  = allAlbums.find(x=>x.id===id);
@@ -581,17 +807,6 @@ tbody.addEventListener('click', e => {
       () => deleteAlbum(id)
     );
   }
-});
-
-// ── Sort ───────────────────────────────────────────────────────────────────
-document.querySelectorAll('thead th[data-col]').forEach(th => {
-  th.addEventListener('click', () => {
-    const col = th.dataset.col;
-    if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=1; }
-    document.querySelectorAll('thead th').forEach(t=>t.classList.remove('sorted-asc','sorted-desc'));
-    th.classList.add(sortDir===1?'sorted-asc':'sorted-desc');
-    sortFiltered();
-  });
 });
 
 // ── Filter tabs ────────────────────────────────────────────────────────────
@@ -605,10 +820,6 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // ── Select controls ────────────────────────────────────────────────────────
-checkAll.addEventListener('change', () => {
-  filtered.forEach(a => checkAll.checked ? selected.add(a.id) : selected.delete(a.id));
-  renderTable();
-});
 document.getElementById('btn-select-all').addEventListener('click', () => {
   filtered.forEach(a => selected.add(a.id)); renderTable();
 });
@@ -626,7 +837,25 @@ searchInput.addEventListener('input', () => {
 });
 document.getElementById('btn-refresh').addEventListener('click', loadAlbums);
 
-// ── Delete selected ────────────────────────────────────────────────────────
+// ── Column picker events ───────────────────────────────────────────────────
+const colPanel     = document.getElementById('col-picker-panel');
+const colPickerList= document.getElementById('col-picker-list');
+document.getElementById('btn-cols').addEventListener('click', e => {
+  e.stopPropagation();
+  colPanel.classList.toggle('open');
+});
+document.addEventListener('click', e => {
+  if (!colPanel.contains(e.target) && e.target.id !== 'btn-cols') colPanel.classList.remove('open');
+});
+document.getElementById('btn-cols-reset').addEventListener('click', () => {
+  colMgr.reset();
+  buildColPicker(colMgr, colPickerList, onColChange);
+  rebuildHeader(); renderTable();
+});
+
+function onColChange() { rebuildHeader(); renderTable(); }
+
+// ── Delete ─────────────────────────────────────────────────────────────────
 btnDeleteSel.addEventListener('click', () => {
   const ids = [...selected];
   confirm('Borrar selección',
@@ -699,7 +928,6 @@ async function openAirsonicModal(artist, title) {
         </div>
       </div>`).join('');
 
-    // Play buttons
     asResultsWrap.querySelectorAll('.btn-play-jukebox').forEach(btn => {
       btn.addEventListener('click', async () => {
         btn.disabled = true; btn.textContent = '…';
@@ -775,6 +1003,8 @@ plConfirm.addEventListener('click', async () => {
 });
 
 // ── Init ───────────────────────────────────────────────────────────────────
+buildColPicker(colMgr, colPickerList, onColChange);
+rebuildHeader();
 loadAlbums();
 </script>
 </body>

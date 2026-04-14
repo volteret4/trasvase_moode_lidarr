@@ -17,3 +17,6 @@ FLASK_PORT = int(os.environ.get("FLASK_PORT", 5000))
 AIRSONIC_URL      = os.environ.get("AIRSONIC_URL",      "http://localhost:4040")
 AIRSONIC_USER     = os.environ.get("AIRSONIC_USER",     "admin")
 AIRSONIC_PASSWORD = os.environ.get("AIRSONIC_PASSWORD", "")
+
+# Last.fm (optional — for cover art fallback)
+LASTFM_API_KEY = os.environ.get("LASTFM_API_KEY", "")

@@ -31,25 +31,79 @@ CREATE TABLE IF NOT EXISTS artists (
 );
 
 CREATE TABLE IF NOT EXISTS albums (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    artist_id  INTEGER NOT NULL REFERENCES artists(id) ON DELETE CASCADE,
-    title      TEXT NOT NULL,
-    label      TEXT,
-    genre      TEXT,
-    year       INTEGER,
-    path       TEXT NOT NULL UNIQUE,
-    collection INTEGER NOT NULL CHECK(collection IN (1, 2)),
-    mbid       TEXT
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    artist_id   INTEGER NOT NULL REFERENCES artists(id) ON DELETE CASCADE,
+    title       TEXT NOT NULL,
+    label       TEXT,
+    genre       TEXT,
+    year        INTEGER,
+    path        TEXT NOT NULL UNIQUE,
+    collection  INTEGER NOT NULL CHECK(collection IN (1, 2)),
+    mbid        TEXT,
+    file_count  INTEGER DEFAULT 0,
+    audio_count INTEGER DEFAULT 0,
+    cover_path  TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_albums_collection ON albums(collection);
 CREATE INDEX IF NOT EXISTS idx_albums_artist_id  ON albums(artist_id);
 """
 
+AUDIO_EXTS = {'.flac', '.mp3', '.ogg', '.m4a', '.aac', '.wav', '.ape', '.wv', '.opus'}
+COVER_NAMES = {'cover', 'folder', 'front', 'album', 'artwork', 'art', 'image', 'albumart'}
+COVER_EXTS  = {'.jpg', '.jpeg', '.png', '.webp'}
+
 
 def init_db(conn):
     conn.executescript(SCHEMA)
+    # Migrate existing databases that lack the newer columns
+    for col, definition in [
+        ("file_count",  "INTEGER DEFAULT 0"),
+        ("audio_count", "INTEGER DEFAULT 0"),
+        ("cover_path",  "TEXT"),
+    ]:
+        try:
+            conn.execute(f"ALTER TABLE albums ADD COLUMN {col} {definition}")
+        except sqlite3.OperationalError:
+            pass  # already exists
     conn.commit()
+
+
+# ---------------------------------------------------------------------------
+# Filesystem helpers
+# ---------------------------------------------------------------------------
+
+def count_files(album_path):
+    """Return (total_files, audio_files) for a directory (non-recursive)."""
+    try:
+        entries = os.listdir(album_path)
+        files   = [e for e in entries if os.path.isfile(os.path.join(album_path, e))]
+        total   = len(files)
+        audio   = sum(1 for f in files if os.path.splitext(f)[1].lower() in AUDIO_EXTS)
+        return total, audio
+    except OSError:
+        return 0, 0
+
+
+def find_cover(album_path):
+    """Return relative filename of the best cover image in the folder, or None."""
+    try:
+        entries = os.listdir(album_path)
+        # Prefer well-known names
+        for name in COVER_NAMES:
+            for ext in COVER_EXTS:
+                fname = name + ext
+                if fname in entries or fname.upper() in entries:
+                    match = next((e for e in entries if e.lower() == fname), None)
+                    if match:
+                        return os.path.join(album_path, match)
+        # Fall back to any image file
+        for entry in sorted(entries):
+            if os.path.splitext(entry)[1].lower() in COVER_EXTS:
+                return os.path.join(album_path, entry)
+    except OSError:
+        pass
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -57,7 +111,6 @@ def init_db(conn):
 # ---------------------------------------------------------------------------
 
 def _tag(audio, *keys):
-    """Return the first non-empty tag value from a mutagen FLAC object."""
     for key in keys:
         for variant in (key.upper(), key.lower(), key.title()):
             val = audio.get(variant)
@@ -67,12 +120,9 @@ def _tag(audio, *keys):
 
 
 def read_flac_metadata(album_path):
-    """Read album metadata from the first FLAC file found in album_path."""
     meta = dict(artist=None, album=None, label=None, genre=None, year=None)
     try:
-        flac_files = sorted(
-            f for f in os.listdir(album_path) if f.lower().endswith(".flac")
-        )
+        flac_files = sorted(f for f in os.listdir(album_path) if f.lower().endswith(".flac"))
         if not flac_files:
             return meta
         audio = FLAC(os.path.join(album_path, flac_files[0]))
@@ -89,8 +139,7 @@ def read_flac_metadata(album_path):
 
 
 def folder_fallback(album_path, collection_root):
-    """Derive artist/album names from folder structure when tags are missing."""
-    rel = os.path.relpath(album_path, collection_root)
+    rel   = os.path.relpath(album_path, collection_root)
     parts = rel.split(os.sep)
     if len(parts) >= 2:
         return parts[-2], parts[-1]
@@ -102,16 +151,13 @@ def folder_fallback(album_path, collection_root):
 # ---------------------------------------------------------------------------
 
 def mb_enrich(artist_name, album_title):
-    """Query MusicBrainz for label, year, and release mbid."""
     try:
         import musicbrainzngs
-        result = musicbrainzngs.search_releases(
-            artist=artist_name, release=album_title, limit=1
-        )
+        result   = musicbrainzngs.search_releases(artist=artist_name, release=album_title, limit=1)
         releases = result.get("release-list", [])
         if not releases:
             return {}
-        rel = releases[0]
+        rel  = releases[0]
         data = {"mbid": rel.get("id")}
         date = rel.get("date", "")
         if len(date) >= 4:
@@ -134,7 +180,6 @@ def mb_enrich(artist_name, album_title):
 # ---------------------------------------------------------------------------
 
 def find_album_dirs(collection_path):
-    """Yield directories that directly contain at least one FLAC file."""
     for root, dirs, files in os.walk(collection_path):
         dirs.sort()
         if any(f.lower().endswith(".flac") for f in files):
@@ -143,9 +188,7 @@ def find_album_dirs(collection_path):
 
 
 def upsert_artist(conn, name):
-    conn.execute(
-        "INSERT INTO artists(name) VALUES(?) ON CONFLICT(name) DO NOTHING", (name,)
-    )
+    conn.execute("INSERT INTO artists(name) VALUES(?) ON CONFLICT(name) DO NOTHING", (name,))
     return conn.execute(
         "SELECT id FROM artists WHERE name=? COLLATE NOCASE", (name,)
     ).fetchone()[0]
@@ -169,42 +212,44 @@ def scan_collection(conn, collection_path, collection_num, use_mb=False):
                     meta[key] = val
             time.sleep(1.1)
 
-        artist_id = upsert_artist(conn, meta["artist"])
+        file_count, audio_count = count_files(album_path)
+        cover_path = find_cover(album_path)
+        artist_id  = upsert_artist(conn, meta["artist"])
 
         conn.execute("""
-            INSERT INTO albums(artist_id, title, label, genre, year, path, collection)
-            VALUES(?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO albums(artist_id, title, label, genre, year, path, collection,
+                               file_count, audio_count, cover_path)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(path) DO UPDATE SET
-                artist_id  = excluded.artist_id,
-                title      = excluded.title,
-                label      = excluded.label,
-                genre      = excluded.genre,
-                year       = excluded.year,
-                collection = excluded.collection
+                artist_id   = excluded.artist_id,
+                title       = excluded.title,
+                label       = excluded.label,
+                genre       = excluded.genre,
+                year        = excluded.year,
+                collection  = excluded.collection,
+                file_count  = excluded.file_count,
+                audio_count = excluded.audio_count,
+                cover_path  = excluded.cover_path
         """, (
-            artist_id, meta["album"], meta["label"], meta["genre"],
-            meta["year"], album_path, collection_num,
+            artist_id, meta["album"], meta["label"], meta["genre"], meta["year"],
+            album_path, collection_num, file_count, audio_count, cover_path,
         ))
 
         seen_paths.add(album_path)
-        print(f"  [C{collection_num}] {meta['artist']} — {meta['album']}")
+        print(f"  [C{collection_num}] {meta['artist']} — {meta['album']}  "
+              f"({audio_count}/{file_count} audio)")
 
     conn.commit()
     return seen_paths
 
 
 def remove_stale(conn, collection_num, seen_paths):
-    rows = conn.execute(
-        "SELECT id, path FROM albums WHERE collection=?", (collection_num,)
-    ).fetchall()
+    rows    = conn.execute("SELECT id, path FROM albums WHERE collection=?", (collection_num,)).fetchall()
     removed = 0
     for row_id, path in rows:
         if path not in seen_paths:
             conn.execute("DELETE FROM albums WHERE id=?", (row_id,))
-            conn.execute("""
-                DELETE FROM artists
-                WHERE id NOT IN (SELECT DISTINCT artist_id FROM albums)
-            """)
+            conn.execute("DELETE FROM artists WHERE id NOT IN (SELECT DISTINCT artist_id FROM albums)")
             print(f"  Removed stale: {path}")
             removed += 1
     conn.commit()
@@ -245,27 +290,12 @@ def main():
 
     c1 = conn.execute("SELECT COUNT(*) FROM albums WHERE collection=1").fetchone()[0]
     c2 = conn.execute("SELECT COUNT(*) FROM albums WHERE collection=2").fetchone()[0]
-    missing = conn.execute("""
-        SELECT COUNT(*)
-        FROM albums a2
-        JOIN artists ar ON a2.artist_id = ar.id
-        WHERE a2.collection = 2
-          AND NOT EXISTS (
-              SELECT 1 FROM albums a1
-              JOIN artists ar1 ON a1.artist_id = ar1.id
-              WHERE a1.collection = 1
-                AND LOWER(ar1.name) = LOWER(ar.name)
-                AND LOWER(a1.title) = LOWER(a2.title)
-          )
-    """).fetchone()[0]
 
     print(f"\n{'─'*50}")
     print(f"  Collection 1 : {c1} albums")
     print(f"  Collection 2 : {c2} albums")
-    print(f"  Missing in C1: {missing} albums")
     print(f"  Stale removed: {r1 + r2} entries")
     print(f"{'─'*50}")
-
     conn.close()
 
 

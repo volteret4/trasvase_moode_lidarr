@@ -19,7 +19,7 @@ from flask import Flask, jsonify, request, render_template
 from config import (
     AIRSONIC_PASSWORD, AIRSONIC_URL, AIRSONIC_USER,
     COLLECTION_1_PATH, COLLECTION_2_PATH, DB_PATH,
-    FLASK_HOST, FLASK_PORT, TEMP_PATH,
+    FLASK_HOST, FLASK_PORT, LASTFM_API_KEY, TEMP_PATH,
 )
 
 app = Flask(__name__)
@@ -36,8 +36,28 @@ def get_db():
     return conn
 
 
+def _migrate_db(conn):
+    """Add columns introduced after the initial schema."""
+    for col, defn in [
+        ("file_count",  "INTEGER DEFAULT 0"),
+        ("audio_count", "INTEGER DEFAULT 0"),
+        ("cover_path",  "TEXT"),
+    ]:
+        try:
+            conn.execute(f"ALTER TABLE albums ADD COLUMN {col} {defn}")
+            conn.commit()
+        except Exception:
+            pass
+
+
+# Run migration once at startup
+with get_db() as _mconn:
+    _migrate_db(_mconn)
+
+
 MISSING_QUERY = """
-    SELECT a2.id, ar.name AS artist, a2.title, a2.label, a2.genre, a2.year, a2.path
+    SELECT a2.id, ar.name AS artist, a2.title, a2.label, a2.genre, a2.year,
+           a2.path, a2.file_count, a2.audio_count, a2.cover_path
     FROM albums a2
     JOIN artists ar ON a2.artist_id = ar.id
     WHERE a2.collection = 2
@@ -207,6 +227,7 @@ def api_delete_album(album_id):
 TEMP_ALBUMS_QUERY = """
     SELECT
         a.id, ar.name AS artist, a.title, a.label, a.genre, a.year, a.path,
+        a.file_count, a.audio_count, a.cover_path,
         EXISTS (
             SELECT 1 FROM albums other
             JOIN artists ar2 ON other.artist_id = ar2.id
@@ -426,6 +447,78 @@ def api_airsonic_playlist_temp():
 
 
 # ---------------------------------------------------------------------------
+# API — cover art
+# ---------------------------------------------------------------------------
+
+COVER_NAMES = {'cover', 'folder', 'front', 'album', 'artwork', 'art', 'image', 'albumart'}
+COVER_EXTS  = {'.jpg', '.jpeg', '.png', '.webp'}
+
+
+@app.route("/api/albums/cover")
+def api_album_cover():
+    """
+    Serve cover art for an album.
+    Priority: local folder image → Last.fm → MusicBrainz CoverArtArchive.
+    Query params: path, artist, album, mbid  (all optional)
+    """
+    from flask import send_file, Response
+
+    path   = request.args.get("path", "")
+    artist = request.args.get("artist", "")
+    album  = request.args.get("album", "")
+    mbid   = request.args.get("mbid", "")
+
+    # 1) Local cover image
+    if path and os.path.isdir(path):
+        try:
+            entries = os.listdir(path)
+            entries_lower = {e.lower(): e for e in entries}
+            for name in COVER_NAMES:
+                for ext in COVER_EXTS:
+                    key = name + ext
+                    if key in entries_lower:
+                        return send_file(os.path.join(path, entries_lower[key]))
+            # Any image file
+            for e in sorted(entries):
+                if os.path.splitext(e)[1].lower() in COVER_EXTS:
+                    return send_file(os.path.join(path, e))
+        except OSError:
+            pass
+
+    # 2) Last.fm
+    if artist and album and LASTFM_API_KEY:
+        try:
+            resp = requests.get("https://ws.audioscrobbler.com/2.0/", params={
+                "method": "album.getinfo", "artist": artist, "album": album,
+                "api_key": LASTFM_API_KEY, "format": "json",
+            }, timeout=6)
+            images = resp.json().get("album", {}).get("image", [])
+            for size in ("extralarge", "large", "medium"):
+                url = next((i["#text"] for i in images if i.get("size") == size and i.get("#text")), None)
+                if url:
+                    img = requests.get(url, timeout=8)
+                    img.raise_for_status()
+                    return Response(img.content, content_type=img.headers.get("Content-Type", "image/jpeg"))
+        except Exception:
+            pass
+
+    # 3) MusicBrainz CoverArtArchive
+    if mbid:
+        try:
+            resp = requests.get(
+                f"https://coverartarchive.org/release/{mbid}/front-250",
+                timeout=8, allow_redirects=True,
+                headers={"User-Agent": "TrasvaseCollectionManager/1.0"},
+            )
+            if resp.status_code == 200:
+                return Response(resp.content, content_type=resp.headers.get("Content-Type", "image/jpeg"))
+        except Exception:
+            pass
+
+    return "", 404
+
+
+# ---------------------------------------------------------------------------
 # API — explore (artists / genres / labels comparison)
 # ---------------------------------------------------------------------------
 
@@ -484,15 +577,29 @@ def api_explore_albums():
     name = request.args.get("name", "")
     conn = get_db()
 
+    DETAIL_COLS = """
+                MAX(a.year)   AS year,
+                MAX(a.genre)  AS genre,
+                MAX(a.label)  AS label,
+                MAX(CASE WHEN a.collection=1 THEN 1    ELSE 0    END) AS in_c1,
+                MAX(CASE WHEN a.collection=2 THEN 1    ELSE 0    END) AS in_c2,
+                MAX(CASE WHEN a.collection=1 THEN a.id END)           AS id_c1,
+                MAX(CASE WHEN a.collection=2 THEN a.id END)           AS id_c2,
+                MAX(CASE WHEN a.collection=1 THEN a.path END)         AS path_c1,
+                MAX(CASE WHEN a.collection=2 THEN a.path END)         AS path_c2,
+                MAX(CASE WHEN a.collection=1 THEN a.file_count  END)  AS files_c1,
+                MAX(CASE WHEN a.collection=2 THEN a.file_count  END)  AS files_c2,
+                MAX(CASE WHEN a.collection=1 THEN a.audio_count END)  AS audio_c1,
+                MAX(CASE WHEN a.collection=2 THEN a.audio_count END)  AS audio_c2,
+                MAX(CASE WHEN a.collection=1 THEN a.cover_path  END)  AS cover_c1,
+                MAX(CASE WHEN a.collection=2 THEN a.cover_path  END)  AS cover_c2
+    """
+
     if view == "artists":
-        rows = conn.execute("""
+        rows = conn.execute(f"""
             SELECT
                 a.title,
-                MAX(a.year)  AS year,
-                MAX(a.genre) AS genre,
-                MAX(a.label) AS label,
-                MAX(CASE WHEN a.collection=1 THEN 1 ELSE 0 END) AS in_c1,
-                MAX(CASE WHEN a.collection=2 THEN 1 ELSE 0 END) AS in_c2
+                {DETAIL_COLS}
             FROM albums a
             JOIN artists ar ON a.artist_id = ar.id
             WHERE LOWER(ar.name) = LOWER(:name)
@@ -501,14 +608,11 @@ def api_explore_albums():
         """, {"name": name}).fetchall()
 
     elif view == "genres":
-        rows = conn.execute("""
+        rows = conn.execute(f"""
             SELECT
                 ar.name AS artist,
                 a.title,
-                a.year,
-                a.label,
-                MAX(CASE WHEN a.collection=1 THEN 1 ELSE 0 END) AS in_c1,
-                MAX(CASE WHEN a.collection=2 THEN 1 ELSE 0 END) AS in_c2
+                {DETAIL_COLS}
             FROM albums a
             JOIN artists ar ON a.artist_id = ar.id
             WHERE LOWER(COALESCE(NULLIF(TRIM(a.genre),''), '(sin género)')) = LOWER(:name)
@@ -517,14 +621,11 @@ def api_explore_albums():
         """, {"name": name}).fetchall()
 
     elif view == "labels":
-        rows = conn.execute("""
+        rows = conn.execute(f"""
             SELECT
                 ar.name AS artist,
                 a.title,
-                a.year,
-                a.genre,
-                MAX(CASE WHEN a.collection=1 THEN 1 ELSE 0 END) AS in_c1,
-                MAX(CASE WHEN a.collection=2 THEN 1 ELSE 0 END) AS in_c2
+                {DETAIL_COLS}
             FROM albums a
             JOIN artists ar ON a.artist_id = ar.id
             WHERE LOWER(COALESCE(NULLIF(TRIM(a.label),''), '(sin sello)')) = LOWER(:name)
