@@ -6,7 +6,7 @@ load_sops_env()
 COLLECTION_1_PATH = os.environ.get("COLLECTION_1_PATH", "/mnt/music/coleccion1")
 COLLECTION_2_PATH = os.environ.get("COLLECTION_2_PATH", "/mnt/music/coleccion2")
 TEMP_PATH         = os.environ.get("TEMP_PATH", os.path.join(
-                        os.environ.get("COLLECTION_1_PATH", "/mnt/music/coleccion1"), "temp"
+                        os.environ.get("COLLECTION_1_PATH", "/mnt/music/coleccion1"), "temp", "auto-dietpi"
                     ))
 DB_PATH           = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.db")
 

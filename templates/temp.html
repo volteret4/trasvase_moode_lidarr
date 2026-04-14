@@ -42,6 +42,9 @@
   .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: .2em; color: var(--green);
     text-shadow: var(--green-glow2); white-space: nowrap; }
   .logo span { color: var(--text); font-weight: 400; }
+  .badge-date { display:inline-block; padding:.1rem .4rem; border-radius:2px; font-size:.68rem;
+    font-weight:600; letter-spacing:.04em; background:#0d1a0d; border:1px solid #225522;
+    color:var(--green-dim); white-space:nowrap; }
   nav { display: flex; gap: .25rem; }
   .nav-link { padding: .3rem .8rem; border-radius: 3px; font-size: .75rem; font-weight: 600;
     letter-spacing: .1em; text-transform: uppercase; text-decoration: none;
@@ -104,13 +107,14 @@
   .table-wrap { overflow: auto; height: calc(100vh - 52px - 42px - 52px); }
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   colgroup col:nth-child(1) { width: 36px; }
-  colgroup col:nth-child(2) { width: 20%; }
-  colgroup col:nth-child(3) { width: 24%; }
+  colgroup col:nth-child(2) { width: 18%; }
+  colgroup col:nth-child(3) { width: 22%; }
   colgroup col:nth-child(4) { width: 5%; }
-  colgroup col:nth-child(5) { width: 11%; }
-  colgroup col:nth-child(6) { width: 13%; }
-  colgroup col:nth-child(7) { width: 96px; } /* dup badge */
-  colgroup col:nth-child(8) { width: 100px; } /* actions */
+  colgroup col:nth-child(5) { width: 10%; }
+  colgroup col:nth-child(6) { width: 12%; }
+  colgroup col:nth-child(7) { width: 88px; }  /* imported */
+  colgroup col:nth-child(8) { width: 96px; }  /* dup badge */
+  colgroup col:nth-child(9) { width: 100px; } /* actions */
   thead th {
     position: sticky; top: 0; z-index: 10; background: #0a1a0a;
     color: var(--green-dim); font-size: .7rem; text-transform: uppercase; letter-spacing: .12em;
@@ -256,7 +260,7 @@
 <body>
 
 <header>
-  <div class="logo">TEMP <span>// álbumes temporales</span></div>
+  <div class="logo">TEMP <span>// auto-dietpi</span></div>
   <nav>
     <a class="nav-link" href="/">Trasvase</a>
     <a class="nav-link active" href="/temp">Temp</a>
@@ -319,7 +323,7 @@
 
 <div class="table-wrap">
   <table>
-    <colgroup><col><col><col><col><col><col><col><col></colgroup>
+    <colgroup><col><col><col><col><col><col><col><col><col></colgroup>
     <thead>
       <tr>
         <th><label class="cb-label"><input type="checkbox" id="check-all"><span class="cb-box"></span></label></th>
@@ -328,6 +332,7 @@
         <th data-col="year">Año</th>
         <th data-col="genre">Género</th>
         <th data-col="label">Sello</th>
+        <th data-col="imported">Importado</th>
         <th>Estado</th>
         <th>Acciones</th>
       </tr>
@@ -520,6 +525,7 @@ function renderTable() {
       <td class="td-year">${a.year||'—'}</td>
       <td class="td-genre" title="${esc(a.genre)}">${esc(a.genre)||'—'}</td>
       <td class="td-label" title="${esc(a.label)}">${esc(a.label)||'—'}</td>
+      <td>${a.imported ? `<span class="badge-date">${esc(a.imported)}</span>` : '—'}</td>
       <td>${a.is_duplicate ? DUP_BADGE : ''}</td>
       <td><div class="actions">
         <button class="btn-icon btn-icon-play" data-id="${a.id}"

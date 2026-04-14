@@ -11,6 +11,7 @@ import os
 import secrets
 import shutil
 import sqlite3
+from datetime import date
 
 import requests
 from flask import Flask, jsonify, request, render_template
@@ -142,9 +143,10 @@ def api_copy():
             results.append({"id": album_id, "success": False, "error": "Album not found"})
             continue
 
-        src_path = row["path"]
-        rel      = os.path.relpath(src_path, COLLECTION_2_PATH)
-        dst_path = os.path.join(COLLECTION_1_PATH, rel)
+        src_path    = row["path"]
+        album_folder = os.path.basename(src_path)
+        date_str    = date.today().strftime("%Y-%m-%d")
+        dst_path    = os.path.join(TEMP_PATH, date_str, album_folder)
 
         if os.path.exists(dst_path):
             results.append({"id": album_id, "success": False, "error": "Destination already exists"})
@@ -221,13 +223,22 @@ TEMP_ALBUMS_QUERY = """
 """
 
 
+def _import_date(path):
+    """Extract YYYY-MM-DD from path like TEMP_PATH/2025-01-15/album."""
+    rel   = os.path.relpath(path, TEMP_PATH)
+    parts = rel.split(os.sep)
+    d     = parts[0] if parts else ""
+    return d if len(d) == 10 and d.count("-") == 2 else None
+
+
 @app.route("/api/temp/albums")
 def api_temp_albums():
     tp   = TEMP_PATH.rstrip("/") + "/"
     conn = get_db()
     rows = conn.execute(TEMP_ALBUMS_QUERY, {"tp": tp}).fetchall()
     conn.close()
-    return jsonify([dict(r) for r in rows])
+    result = [dict(r) | {"imported": _import_date(r["path"])} for r in rows]
+    return jsonify(result)
 
 
 @app.route("/api/temp/stats")
@@ -412,6 +423,121 @@ def api_airsonic_playlist_temp():
         })
     except Exception as exc:
         return jsonify({"error": str(exc)}), 502
+
+
+# ---------------------------------------------------------------------------
+# API — explore (artists / genres / labels comparison)
+# ---------------------------------------------------------------------------
+
+@app.route("/api/explore")
+def api_explore():
+    view = request.args.get("view", "artists")
+    conn = get_db()
+
+    if view == "artists":
+        rows = conn.execute("""
+            SELECT
+                ar.id,
+                ar.name,
+                COUNT(DISTINCT CASE WHEN a.collection=1 THEN LOWER(a.title) END) AS c1_count,
+                COUNT(DISTINCT CASE WHEN a.collection=2 THEN LOWER(a.title) END) AS c2_count
+            FROM artists ar
+            JOIN albums a ON a.artist_id = ar.id
+            GROUP BY ar.id, ar.name
+            ORDER BY ar.name COLLATE NOCASE
+        """).fetchall()
+
+    elif view == "genres":
+        rows = conn.execute("""
+            SELECT
+                COALESCE(NULLIF(TRIM(genre),''), '(sin género)') AS name,
+                COUNT(DISTINCT CASE WHEN collection=1 THEN id END) AS c1_count,
+                COUNT(DISTINCT CASE WHEN collection=2 THEN id END) AS c2_count
+            FROM albums
+            GROUP BY LOWER(COALESCE(NULLIF(TRIM(genre),''), '(sin género)'))
+            ORDER BY (c1_count + c2_count) DESC
+        """).fetchall()
+
+    elif view == "labels":
+        rows = conn.execute("""
+            SELECT
+                COALESCE(NULLIF(TRIM(label),''), '(sin sello)') AS name,
+                COUNT(DISTINCT CASE WHEN collection=1 THEN id END) AS c1_count,
+                COUNT(DISTINCT CASE WHEN collection=2 THEN id END) AS c2_count
+            FROM albums
+            GROUP BY LOWER(COALESCE(NULLIF(TRIM(label),''), '(sin sello)'))
+            ORDER BY (c1_count + c2_count) DESC
+        """).fetchall()
+
+    else:
+        conn.close()
+        return jsonify({"error": "Invalid view"}), 400
+
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
+
+@app.route("/api/explore/albums")
+def api_explore_albums():
+    """Albums for a given artist/genre/label, showing in_c1 and in_c2 flags."""
+    view = request.args.get("view")
+    name = request.args.get("name", "")
+    conn = get_db()
+
+    if view == "artists":
+        rows = conn.execute("""
+            SELECT
+                a.title,
+                MAX(a.year)  AS year,
+                MAX(a.genre) AS genre,
+                MAX(a.label) AS label,
+                MAX(CASE WHEN a.collection=1 THEN 1 ELSE 0 END) AS in_c1,
+                MAX(CASE WHEN a.collection=2 THEN 1 ELSE 0 END) AS in_c2
+            FROM albums a
+            JOIN artists ar ON a.artist_id = ar.id
+            WHERE LOWER(ar.name) = LOWER(:name)
+            GROUP BY LOWER(a.title)
+            ORDER BY MAX(a.year), a.title COLLATE NOCASE
+        """, {"name": name}).fetchall()
+
+    elif view == "genres":
+        rows = conn.execute("""
+            SELECT
+                ar.name AS artist,
+                a.title,
+                a.year,
+                a.label,
+                MAX(CASE WHEN a.collection=1 THEN 1 ELSE 0 END) AS in_c1,
+                MAX(CASE WHEN a.collection=2 THEN 1 ELSE 0 END) AS in_c2
+            FROM albums a
+            JOIN artists ar ON a.artist_id = ar.id
+            WHERE LOWER(COALESCE(NULLIF(TRIM(a.genre),''), '(sin género)')) = LOWER(:name)
+            GROUP BY ar.id, LOWER(a.title)
+            ORDER BY ar.name COLLATE NOCASE, a.year, a.title COLLATE NOCASE
+        """, {"name": name}).fetchall()
+
+    elif view == "labels":
+        rows = conn.execute("""
+            SELECT
+                ar.name AS artist,
+                a.title,
+                a.year,
+                a.genre,
+                MAX(CASE WHEN a.collection=1 THEN 1 ELSE 0 END) AS in_c1,
+                MAX(CASE WHEN a.collection=2 THEN 1 ELSE 0 END) AS in_c2
+            FROM albums a
+            JOIN artists ar ON a.artist_id = ar.id
+            WHERE LOWER(COALESCE(NULLIF(TRIM(a.label),''), '(sin sello)')) = LOWER(:name)
+            GROUP BY ar.id, LOWER(a.title)
+            ORDER BY ar.name COLLATE NOCASE, a.year, a.title COLLATE NOCASE
+        """, {"name": name}).fetchall()
+
+    else:
+        conn.close()
+        return jsonify({"error": "Invalid view"}), 400
+
+    conn.close()
+    return jsonify([dict(r) for r in rows])
 
 
 # ---------------------------------------------------------------------------

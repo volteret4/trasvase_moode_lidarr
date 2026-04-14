@@ -6,167 +6,236 @@
 <title>TRASVASE — Gestor de Colecciones</title>
 <style>
   :root {
-    --green:       #00ff41;
-    --green-dim:   #00cc33;
-    --green-dark:  #003310;
-    --green-glow:  0 0 8px #00ff4166;
-    --green-glow2: 0 0 16px #00ff4188;
-    --bg:          #080808;
-    --bg2:         #0d0d0d;
-    --bg3:         #111;
-    --border:      #1a2e1a;
-    --border-hi:   #00ff4133;
-    --text:        #b0b0b0;
-    --text-hi:     #e8e8e8;
-    --red:         #ff3333;
+    --green:      #00ff41;
+    --green-dim:  #00cc33;
+    --green-dark: #003310;
+    --green-glow: 0 0 8px #00ff4166;
+    --green-glow2:0 0 16px #00ff4188;
+    --bg:   #080808; --bg2: #0d0d0d; --bg3: #111;
+    --border: #1a2e1a; --border-hi: #00ff4133;
+    --text: #b0b0b0; --text-hi: #e8e8e8;
+    --red:  #ff3333;
+    --amber:#ffaa00; --amber-dark:#1e1400;
+    --c1:   #00ff41; --c1-dark: #003310;
+    --c2:   #00aaff; --c2-dark: #001e2e;
   }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--text);
-    font-family: 'JetBrains Mono','Fira Mono','Consolas',monospace; font-size: 13px; line-height: 1.5; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg);color:var(--text);
+    font-family:'JetBrains Mono','Fira Mono','Consolas',monospace;font-size:13px;line-height:1.5}
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--green-dark);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--green-dim)}
 
-  header {
-    position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; gap: 1.5rem;
-    padding: 0 1.5rem; height: 52px;
-    background: var(--bg); border-bottom: 1px solid var(--border-hi);
-    box-shadow: 0 2px 20px #000a;
-  }
-  .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: .2em; color: var(--green);
-    text-shadow: var(--green-glow2); white-space: nowrap; }
-  .logo span { color: var(--text); font-weight: 400; }
-  nav { display: flex; gap: .25rem; }
-  .nav-link {
-    padding: .3rem .8rem; border-radius: 3px; font-size: .75rem; font-weight: 600;
-    letter-spacing: .1em; text-transform: uppercase; text-decoration: none;
-    border: 1px solid transparent; transition: all .15s; color: var(--text);
-  }
-  .nav-link:hover  { border-color: var(--border-hi); color: var(--green); background: var(--green-dark); }
-  .nav-link.active { border-color: var(--green-dim); color: var(--green); }
+  /* header */
+  header{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:1.5rem;
+    padding:0 1.5rem;height:52px;background:var(--bg);border-bottom:1px solid var(--border-hi);
+    box-shadow:0 2px 20px #000a}
+  .logo{font-size:1.1rem;font-weight:700;letter-spacing:.2em;color:var(--green);
+    text-shadow:var(--green-glow2);white-space:nowrap}
+  .logo span{color:var(--text);font-weight:400}
+  nav{display:flex;gap:.25rem}
+  .nav-link{padding:.3rem .8rem;border-radius:3px;font-size:.75rem;font-weight:600;
+    letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
+    border:1px solid transparent;transition:all .15s;color:var(--text)}
+  .nav-link:hover{border-color:var(--border-hi);color:var(--green);background:var(--green-dark)}
+  .nav-link.active{border-color:var(--green-dim);color:var(--green)}
 
-  .stats-bar { display: flex; gap: 1.5rem; flex-wrap: wrap;
-    padding: .6rem 1.5rem; background: var(--bg2); border-bottom: 1px solid var(--border); }
-  .stat { display: flex; align-items: center; gap: .4rem; }
-  .stat-label { color: #555; font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; }
-  .stat-value { color: var(--green); font-size: .95rem; font-weight: 700; }
-  .stat-value.missing { color: #ffcc00; text-shadow: 0 0 8px #ffcc0088; }
+  /* stats */
+  .stats-bar{display:flex;gap:1.5rem;flex-wrap:wrap;padding:.6rem 1.5rem;
+    background:var(--bg2);border-bottom:1px solid var(--border)}
+  .stat{display:flex;align-items:center;gap:.4rem}
+  .stat-label{color:#555;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em}
+  .stat-value{color:var(--green);font-size:.95rem;font-weight:700}
+  .stat-value.c2{color:var(--c2)}
+  .stat-value.missing{color:var(--amber);text-shadow:0 0 8px #ffaa0088}
 
-  .toolbar { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
-    padding: .75rem 1.5rem; background: var(--bg2); border-bottom: 1px solid var(--border); }
-  .search-wrap { position: relative; flex: 1; min-width: 180px; max-width: 360px; }
-  .search-wrap svg { position: absolute; left: .6rem; top: 50%; transform: translateY(-50%);
-    width: 14px; height: 14px; color: #444; pointer-events: none; }
-  input[type="search"] {
-    width: 100%; background: var(--bg3); border: 1px solid var(--border);
-    color: var(--text-hi); padding: .4rem .75rem .4rem 2rem;
-    border-radius: 3px; outline: none; font-family: inherit; font-size: .85rem;
-    transition: border-color .2s, box-shadow .2s;
-  }
-  input[type="search"]:focus { border-color: var(--green-dim); box-shadow: var(--green-glow); }
+  /* main tabs */
+  .main-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border-hi);padding:0 1.5rem}
+  .mtab{padding:.6rem 1.2rem;font-family:inherit;font-size:.78rem;font-weight:600;
+    letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+    border:none;border-bottom:2px solid transparent;
+    background:transparent;color:#444;transition:all .15s;margin-bottom:-1px}
+  .mtab:hover{color:var(--text)}
+  .mtab.active{color:var(--green);border-bottom-color:var(--green)}
 
-  .btn { display: inline-flex; align-items: center; gap: .4rem;
-    padding: .4rem .9rem; border-radius: 3px; border: 1px solid;
-    font-family: inherit; font-size: .8rem; font-weight: 600;
-    cursor: pointer; letter-spacing: .05em; white-space: nowrap;
-    transition: all .15s; text-transform: uppercase; }
-  .btn:disabled { opacity: .3; cursor: not-allowed; }
-  .btn svg { width: 13px; height: 13px; flex-shrink: 0; }
-  .btn-primary { background: var(--green); border-color: var(--green); color: #000; }
-  .btn-primary:not(:disabled):hover { background: #fff; border-color: #fff; color: #000; box-shadow: var(--green-glow2); }
-  .btn-ghost { background: transparent; border-color: var(--green-dim); color: var(--green); }
-  .btn-ghost:not(:disabled):hover { background: var(--green-dark); box-shadow: var(--green-glow); }
-  .btn-danger { background: transparent; border-color: var(--red); color: var(--red); }
-  .btn-danger:not(:disabled):hover { background: #2a0000; box-shadow: 0 0 8px #ff333366; }
-  .spacer { flex: 1; }
-  .sel-count { color: var(--green-dim); font-size: .8rem; min-width: 6ch; text-align: right; }
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.38rem .85rem;
+    border-radius:3px;border:1px solid;font-family:inherit;font-size:.78rem;font-weight:600;
+    cursor:pointer;letter-spacing:.05em;white-space:nowrap;transition:all .15s;text-transform:uppercase}
+  .btn:disabled{opacity:.3;cursor:not-allowed}
+  .btn svg{width:13px;height:13px;flex-shrink:0}
+  .btn-primary{background:var(--green);border-color:var(--green);color:#000}
+  .btn-primary:not(:disabled):hover{background:#fff;border-color:#fff;box-shadow:var(--green-glow2)}
+  .btn-ghost{background:transparent;border-color:var(--green-dim);color:var(--green)}
+  .btn-ghost:not(:disabled):hover{background:var(--green-dark);box-shadow:var(--green-glow)}
+  .btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
+  .btn-danger:not(:disabled):hover{background:#2a0000}
+  .spacer{flex:1}
+  .sel-count{color:var(--green-dim);font-size:.8rem;min-width:6ch;text-align:right}
 
-  .table-wrap { overflow: auto; height: calc(100vh - 52px - 42px - 54px); }
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  colgroup col:nth-child(1) { width: 36px; }
-  colgroup col:nth-child(2) { width: 22%; }
-  colgroup col:nth-child(3) { width: 26%; }
-  colgroup col:nth-child(4) { width: 6%; }
-  colgroup col:nth-child(5) { width: 12%; }
-  colgroup col:nth-child(6) { width: 16%; }
-  colgroup col:nth-child(7) { width: 88px; }
-  thead th {
-    position: sticky; top: 0; z-index: 10; background: #0a1a0a;
-    color: var(--green-dim); font-size: .7rem; text-transform: uppercase; letter-spacing: .12em;
-    font-weight: 600; padding: .55rem .7rem; border-bottom: 1px solid var(--border-hi);
-    text-align: left; white-space: nowrap; user-select: none; cursor: pointer;
-  }
-  thead th:first-child { cursor: default; text-align: center; }
-  thead th.sorted-asc::after  { content: ' ↑'; color: var(--green); }
-  thead th.sorted-desc::after { content: ' ↓'; color: var(--green); }
-  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
-  tbody tr:hover   { background: #111a11; }
-  tbody tr.checked { background: #0a1e0a; }
-  tbody tr.checked:hover { background: #0d2a0d; }
-  td { padding: .45rem .7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  td:first-child { text-align: center; vertical-align: middle; }
-  .td-artist { color: var(--text-hi); font-weight: 500; }
-  .td-title  { color: var(--green); }
-  .td-year   { color: #888; }
-  .td-genre  { color: #6a9e6a; font-size: .8rem; }
-  .td-label  { color: #666; font-size: .8rem; }
+  /* inputs */
+  input[type="search"]{background:var(--bg3);border:1px solid var(--border);color:var(--text-hi);
+    padding:.38rem .75rem;border-radius:3px;outline:none;font-family:inherit;font-size:.85rem;
+    transition:border-color .2s,box-shadow .2s}
+  input[type="search"]:focus{border-color:var(--green-dim);box-shadow:var(--green-glow)}
+  input[type="checkbox"]{display:none}
+  .cb-box{display:inline-block;width:14px;height:14px;border:1px solid #333;border-radius:2px;
+    background:var(--bg);transition:all .1s;cursor:pointer;position:relative}
+  input[type="checkbox"]:checked+.cb-box{background:var(--green);border-color:var(--green);box-shadow:var(--green-glow)}
+  input[type="checkbox"]:checked+.cb-box::after{content:'';position:absolute;left:3px;top:1px;
+    width:5px;height:8px;border:2px solid #000;border-top:none;border-left:none;transform:rotate(45deg)}
+  label.cb-label{display:flex;align-items:center;justify-content:center;cursor:pointer}
 
-  input[type="checkbox"] { display: none; }
-  .cb-box { display: inline-block; width: 14px; height: 14px; border: 1px solid #333;
-    border-radius: 2px; background: var(--bg); transition: all .1s; cursor: pointer;
-    position: relative; flex-shrink: 0; }
-  input[type="checkbox"]:checked + .cb-box { background: var(--green); border-color: var(--green); box-shadow: var(--green-glow); }
-  input[type="checkbox"]:checked + .cb-box::after {
-    content: ''; position: absolute; left: 3px; top: 1px;
-    width: 5px; height: 8px; border: 2px solid #000; border-top: none; border-left: none; transform: rotate(45deg);
-  }
-  label.cb-label { display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  /* ── TAB 1 ── */
+  #tab-missing{display:flex;flex-direction:column;height:calc(100vh - 52px - 42px - 40px)}
+  .toolbar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;
+    padding:.65rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+  .search-wrap{position:relative;flex:1;min-width:160px;max-width:300px}
+  .search-wrap svg{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);
+    width:14px;height:14px;color:#444;pointer-events:none}
+  .search-wrap input{padding-left:2rem;width:100%}
 
-  .actions { display: flex; gap: .35rem; align-items: center; }
-  .btn-icon { display: inline-flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px; border-radius: 3px; border: 1px solid;
-    background: transparent; cursor: pointer; transition: all .15s; flex-shrink: 0; }
-  .btn-icon svg { width: 13px; height: 13px; }
-  .btn-icon-copy { border-color: #225522; color: var(--green-dim); }
-  .btn-icon-copy:hover { border-color: var(--green); color: var(--green); background: var(--green-dark); box-shadow: var(--green-glow); }
-  .btn-icon-del  { border-color: #3a1111; color: #663333; }
-  .btn-icon-del:hover  { border-color: var(--red); color: var(--red); background: #1a0000; }
+  .table-wrap{flex:1;overflow:auto}
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  colgroup col:nth-child(1){width:36px}
+  colgroup col:nth-child(2){width:22%}
+  colgroup col:nth-child(3){width:26%}
+  colgroup col:nth-child(4){width:6%}
+  colgroup col:nth-child(5){width:12%}
+  colgroup col:nth-child(6){width:16%}
+  colgroup col:nth-child(7){width:88px}
+  thead th{position:sticky;top:0;z-index:10;background:#0a1a0a;
+    color:var(--green-dim);font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;
+    font-weight:600;padding:.5rem .7rem;border-bottom:1px solid var(--border-hi);
+    text-align:left;white-space:nowrap;user-select:none;cursor:pointer}
+  thead th:first-child{cursor:default;text-align:center}
+  thead th.sorted-asc::after{content:' ↑';color:var(--green)}
+  thead th.sorted-desc::after{content:' ↓';color:var(--green)}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+  tbody tr:hover{background:#111a11}
+  tbody tr.checked{background:#0a1e0a}
+  tbody tr.checked:hover{background:#0d2a0d}
+  td{padding:.42rem .7rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  td:first-child{text-align:center;vertical-align:middle}
+  .td-artist{color:var(--text-hi);font-weight:500}
+  .td-title{color:var(--green)}
+  .td-year{color:#888}
+  .td-genre{color:#6a9e6a;font-size:.8rem}
+  .td-label{color:#666;font-size:.8rem}
+  .actions{display:flex;gap:.35rem;align-items:center}
+  .btn-icon{display:inline-flex;align-items:center;justify-content:center;
+    width:28px;height:28px;border-radius:3px;border:1px solid;
+    background:transparent;cursor:pointer;transition:all .15s;flex-shrink:0}
+  .btn-icon svg{width:13px;height:13px}
+  .btn-icon-copy{border-color:#225522;color:var(--green-dim)}
+  .btn-icon-copy:hover{border-color:var(--green);color:var(--green);background:var(--green-dark);box-shadow:var(--green-glow)}
+  .btn-icon-del{border-color:#3a1111;color:#663333}
+  .btn-icon-del:hover{border-color:var(--red);color:var(--red);background:#1a0000}
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    flex:1;gap:1rem;color:#333;padding:3rem;text-align:center}
+  .empty svg{width:48px;height:48px;color:#222}
 
-  .empty { display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100%; gap: 1rem; color: #333; padding: 3rem; text-align: center; }
-  .empty svg { width: 48px; height: 48px; color: #222; }
+  /* ── TAB 2 ── */
+  #tab-explore{display:none;flex-direction:column;height:calc(100vh - 52px - 42px - 40px)}
+  .explore-toolbar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;
+    padding:.6rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+  .etabs{display:flex;gap:2px}
+  .etab{padding:.3rem .72rem;border-radius:3px;font-size:.75rem;font-weight:600;
+    letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--border);
+    background:transparent;cursor:pointer;transition:all .15s;color:#555;font-family:inherit}
+  .etab:hover{border-color:var(--border-hi);color:var(--text)}
+  .etab.active{border-color:var(--green-dim);color:var(--green);background:var(--green-dark)}
 
-  #loading-overlay { position: fixed; inset: 0; z-index: 999; background: #000d;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity .2s; }
-  #loading-overlay.active { opacity: 1; pointer-events: all; }
-  .spinner { width: 36px; height: 36px; border: 3px solid var(--green-dark);
-    border-top-color: var(--green); border-radius: 50%;
-    animation: spin .7s linear infinite; box-shadow: var(--green-glow2); }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .explore-body{flex:1;display:flex;overflow:hidden}
 
-  #toasts { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 1000;
-    display: flex; flex-direction: column; gap: .5rem; pointer-events: none; }
-  .toast { display: flex; align-items: center; gap: .6rem; padding: .6rem 1rem;
-    border-radius: 4px; font-size: .8rem; border: 1px solid; max-width: 340px;
-    animation: slideIn .25s ease-out; pointer-events: all; }
-  .toast svg { width: 14px; height: 14px; flex-shrink: 0; }
-  .toast-ok   { background: #0a1a0a; border-color: var(--green-dim); color: var(--green); }
-  .toast-err  { background: #1a0a0a; border-color: var(--red); color: var(--red); }
-  @keyframes slideIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .explore-list-panel{width:290px;flex-shrink:0;border-right:1px solid var(--border);
+    display:flex;flex-direction:column;overflow:hidden}
+  .explore-list-search{padding:.5rem;border-bottom:1px solid var(--border);flex-shrink:0}
+  .explore-list-search input{width:100%;font-size:.82rem}
+  .explore-list{flex:1;overflow-y:auto}
 
-  .modal-bg { position: fixed; inset: 0; z-index: 200; background: #000b;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity .2s; }
-  .modal-bg.active { opacity: 1; pointer-events: all; }
-  .modal { background: var(--bg3); border: 1px solid var(--border-hi);
-    box-shadow: 0 0 40px #00ff4122; border-radius: 6px; padding: 2rem;
-    min-width: 340px; max-width: 480px; display: flex; flex-direction: column; gap: 1.2rem; }
-  .modal h3 { color: var(--green); font-size: .95rem; letter-spacing: .1em; text-transform: uppercase; }
-  .modal p  { color: var(--text); font-size: .85rem; line-height: 1.7; }
-  .modal-actions { display: flex; gap: .6rem; justify-content: flex-end; }
+  .explore-item{display:flex;align-items:center;padding:.42rem .72rem;
+    border-bottom:1px solid #111;cursor:pointer;transition:background .1s;gap:.4rem}
+  .explore-item:hover{background:#111a11}
+  .explore-item.active{background:#0a2a0a;border-left:2px solid var(--green);
+    padding-left:calc(.72rem - 2px)}
+  .ei-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    color:var(--text-hi);font-size:.83rem}
+  .ei-counts{display:flex;gap:.25rem;flex-shrink:0}
+  .ei-c{font-size:.68rem;font-weight:700;padding:.08rem .28rem;border-radius:2px}
+  .ei-c1{background:var(--c1-dark);color:var(--c1);border:1px solid #005520}
+  .ei-c2{background:var(--c2-dark);color:var(--c2);border:1px solid #003355}
+
+  .explore-detail-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .detail-header{padding:.6rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0;
+    display:flex;align-items:center;gap:.75rem;background:var(--bg2)}
+  .detail-title{color:var(--green);font-weight:700;font-size:.9rem}
+  .detail-subtitle{color:#444;font-size:.78rem}
+  .detail-legend{display:flex;gap:.6rem;margin-left:auto}
+  .leg{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:#555}
+  .leg-dot{width:8px;height:8px;border-radius:50%}
+  .detail-wrap{flex:1;overflow:auto}
+
+  .detail-table{width:100%;border-collapse:collapse}
+  .detail-table thead th{position:sticky;top:0;z-index:5;background:#090d09;
+    color:var(--green-dim);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;
+    font-weight:600;padding:.42rem .7rem;border-bottom:1px solid var(--border-hi);
+    text-align:left;white-space:nowrap}
+  .detail-table tbody tr{border-bottom:1px solid #0d0d0d;transition:background .1s}
+  .detail-table tbody tr:hover{background:#0d100d}
+  .detail-table tbody tr.only-c2{background:#06080e}
+  .detail-table tbody tr.only-c2:hover{background:#0a0c14}
+  .detail-table td{padding:.36rem .7rem;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dt-title{color:var(--green)}
+  .only-c2 .dt-title{color:var(--c2)}
+  .dt-text{color:var(--text-hi)}
+  .dt-sub{color:#666;font-size:.78rem}
+
+  .col-dot{display:inline-block;width:9px;height:9px;border-radius:50%}
+  .on-c1{background:var(--c1);box-shadow:0 0 4px var(--c1)}
+  .on-c2{background:var(--c2);box-shadow:0 0 4px var(--c2)}
+  .dot-off{background:#222}
+
+  .detail-empty{display:flex;align-items:center;justify-content:center;
+    min-height:120px;color:#333;font-size:.85rem}
+  .explore-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    flex:1;gap:.75rem;color:#2a2a2a}
+  .explore-placeholder svg{width:48px;height:48px}
+  .explore-placeholder p{font-size:.85rem}
+
+  /* loading */
+  #loading-overlay{position:fixed;inset:0;z-index:999;background:#000d;
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .2s}
+  #loading-overlay.active{opacity:1;pointer-events:all}
+  .spinner{width:36px;height:36px;border:3px solid var(--green-dark);
+    border-top-color:var(--green);border-radius:50%;
+    animation:spin .7s linear infinite;box-shadow:var(--green-glow2)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* toasts */
+  #toasts{position:fixed;bottom:1.5rem;right:1.5rem;z-index:1000;
+    display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+  .toast{display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem;
+    border-radius:4px;font-size:.8rem;border:1px solid;max-width:340px;
+    animation:slideIn .25s ease-out;pointer-events:all}
+  .toast svg{width:14px;height:14px;flex-shrink:0}
+  .toast-ok{background:#0a1a0a;border-color:var(--green-dim);color:var(--green)}
+  .toast-err{background:#1a0a0a;border-color:var(--red);color:var(--red)}
+  @keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+  /* modal */
+  .modal-bg{position:fixed;inset:0;z-index:200;background:#000b;
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .2s}
+  .modal-bg.active{opacity:1;pointer-events:all}
+  .modal{background:var(--bg3);border:1px solid var(--border-hi);
+    box-shadow:0 0 40px #00ff4122;border-radius:6px;padding:2rem;
+    min-width:340px;max-width:480px;display:flex;flex-direction:column;gap:1.2rem}
+  .modal h3{color:var(--green);font-size:.95rem;letter-spacing:.1em;text-transform:uppercase}
+  .modal p{color:var(--text);font-size:.85rem;line-height:1.7}
+  .modal-actions{display:flex;gap:.6rem;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -182,56 +251,112 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
       <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-    </svg>
-    Actualizar
+    </svg>Actualizar
   </button>
 </header>
 
 <div class="stats-bar">
   <div class="stat"><span class="stat-label">Colección 1</span><span class="stat-value" id="s-c1">—</span></div>
-  <div class="stat"><span class="stat-label">Colección 2</span><span class="stat-value" id="s-c2">—</span></div>
+  <div class="stat"><span class="stat-label">Colección 2</span><span class="stat-value c2" id="s-c2">—</span></div>
   <div class="stat"><span class="stat-label">Artistas</span><span class="stat-value" id="s-artists">—</span></div>
   <div class="stat"><span class="stat-label">Faltan en C1</span><span class="stat-value missing" id="s-missing">—</span></div>
 </div>
 
-<div class="toolbar">
-  <div class="search-wrap">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <input type="search" id="search" placeholder="Filtrar artista, álbum, género…">
-  </div>
-  <button class="btn btn-ghost" id="btn-select-all">Seleccionar todo</button>
-  <button class="btn btn-ghost" id="btn-deselect-all">Limpiar</button>
-  <div class="spacer"></div>
-  <span class="sel-count" id="sel-count"></span>
-  <button class="btn btn-primary" id="btn-copy-sel" disabled>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-    Copiar selección
-  </button>
+<div class="main-tabs">
+  <button class="mtab active" data-tab="missing">Álbumes Faltantes</button>
+  <button class="mtab" data-tab="explore">Explorar Colecciones</button>
 </div>
 
-<div class="table-wrap">
-  <table id="albums-table">
-    <colgroup><col><col><col><col><col><col><col></colgroup>
-    <thead>
-      <tr>
-        <th><label class="cb-label"><input type="checkbox" id="check-all"><span class="cb-box"></span></label></th>
-        <th data-col="artist">Artista</th>
-        <th data-col="title">Álbum</th>
-        <th data-col="year">Año</th>
-        <th data-col="genre">Género</th>
-        <th data-col="label">Sello</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="albums-body"></tbody>
-  </table>
-  <div class="empty" id="empty-state" style="display:none;">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-    </svg>
-    <p>No hay álbumes ausentes o no hay resultados para el filtro.</p>
+<!-- TAB 1: Missing albums -->
+<div id="tab-missing">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="search" id="search" placeholder="Filtrar artista, álbum, género…">
+    </div>
+    <button class="btn btn-ghost" id="btn-select-all">Seleccionar todo</button>
+    <button class="btn btn-ghost" id="btn-deselect-all">Limpiar</button>
+    <div class="spacer"></div>
+    <span class="sel-count" id="sel-count"></span>
+    <button class="btn btn-primary" id="btn-copy-sel" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Copiar a temp
+    </button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <colgroup><col><col><col><col><col><col><col></colgroup>
+      <thead>
+        <tr>
+          <th><label class="cb-label"><input type="checkbox" id="check-all"><span class="cb-box"></span></label></th>
+          <th data-col="artist">Artista</th>
+          <th data-col="title">Álbum</th>
+          <th data-col="year">Año</th>
+          <th data-col="genre">Género</th>
+          <th data-col="label">Sello</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="albums-body"></tbody>
+    </table>
+    <div class="empty" id="empty-state" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <p>No hay álbumes ausentes o no hay resultados para el filtro.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: Explore -->
+<div id="tab-explore">
+  <div class="explore-toolbar">
+    <div class="etabs">
+      <button class="etab active" data-view="artists">Artistas</button>
+      <button class="etab" data-view="genres">Géneros</button>
+      <button class="etab" data-view="labels">Sellos</button>
+    </div>
+    <div class="spacer"></div>
+    <span id="explore-count" style="color:#444;font-size:.78rem;"></span>
+  </div>
+  <div class="explore-body">
+    <div class="explore-list-panel">
+      <div class="explore-list-search">
+        <input type="search" id="explore-search" placeholder="Buscar…">
+      </div>
+      <div class="explore-list" id="explore-list">
+        <div class="detail-empty">Selecciona la pestaña Explorar para cargar</div>
+      </div>
+    </div>
+    <div class="explore-detail-panel">
+      <div class="explore-placeholder" id="explore-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <p>Selecciona un elemento de la lista</p>
+      </div>
+      <div id="explore-detail" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
+        <div class="detail-header">
+          <div>
+            <div class="detail-title" id="detail-title"></div>
+            <div class="detail-subtitle" id="detail-subtitle"></div>
+          </div>
+          <div class="detail-legend">
+            <span class="leg"><span class="leg-dot" style="background:var(--c1)"></span>En C1</span>
+            <span class="leg"><span class="leg-dot" style="background:var(--c2)"></span>En C2</span>
+            <span class="leg"><span class="leg-dot" style="background:#222;border:1px solid #444"></span>Ausente</span>
+          </div>
+        </div>
+        <div class="detail-wrap">
+          <table class="detail-table">
+            <thead id="detail-thead"></thead>
+            <tbody id="detail-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -250,25 +375,8 @@
 </div>
 
 <script>
-let allAlbums = [], filtered = [], selected = new Set();
-let sortCol = 'artist', sortDir = 1, confirmCb = null;
-
-const tbody = document.getElementById('albums-body');
-const emptyState = document.getElementById('empty-state');
-const searchInput = document.getElementById('search');
-const checkAll = document.getElementById('check-all');
-const selCountEl = document.getElementById('sel-count');
-const btnCopySel = document.getElementById('btn-copy-sel');
-const loading = document.getElementById('loading-overlay');
-const toastsCont = document.getElementById('toasts');
-const modalBg = document.getElementById('modal-bg');
-const modalTitle = document.getElementById('modal-title');
-const modalBody = document.getElementById('modal-body');
-const modalConfirm = document.getElementById('modal-confirm');
-const modalCancel = document.getElementById('modal-cancel');
-
-function setLoading(on) { loading.classList.toggle('active', on); }
-
+// ── Utils ─────────────────────────────────────────────────────────────────
+function setLoading(on) { document.getElementById('loading-overlay').classList.toggle('active', on); }
 const ICONS = {
   ok:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
   err: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
@@ -277,30 +385,62 @@ function toast(msg, type='ok', dur=4000) {
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
   el.innerHTML = `${ICONS[type]}<span>${msg}</span>`;
-  toastsCont.appendChild(el);
+  document.getElementById('toasts').appendChild(el);
   setTimeout(() => el.remove(), dur);
 }
-
-function confirm(title, body, onConfirm, danger=true) {
-  modalTitle.textContent = title; modalBody.textContent = body;
-  modalConfirm.className = `btn ${danger ? 'btn-danger' : 'btn-primary'}`;
-  modalConfirm.textContent = danger ? 'Confirmar' : 'Aceptar';
-  confirmCb = onConfirm; modalBg.classList.add('active');
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-modalConfirm.addEventListener('click', () => { modalBg.classList.remove('active'); if (confirmCb) { confirmCb(); confirmCb = null; } });
-modalCancel.addEventListener('click', () => { modalBg.classList.remove('active'); confirmCb = null; });
-modalBg.addEventListener('click', e => { if (e.target === modalBg) { modalBg.classList.remove('active'); confirmCb = null; } });
-
 async function api(url, opts={}) {
-  const res = await fetch(url, { headers: {'Content-Type':'application/json'}, ...opts });
-  if (!res.ok) { const e = await res.json().catch(() => ({error: res.statusText})); throw new Error(e.error || res.statusText); }
+  const res = await fetch(url, { headers:{'Content-Type':'application/json'}, ...opts });
+  if (!res.ok) { const e = await res.json().catch(()=>({error:res.statusText})); throw new Error(e.error||res.statusText); }
   return res.json();
 }
 
+// Confirm modal
+let confirmCb = null;
+const modalBg = document.getElementById('modal-bg');
+function showConfirm(title, body, onConfirm, danger=true) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').textContent  = body;
+  const btn = document.getElementById('modal-confirm');
+  btn.className   = `btn ${danger ? 'btn-danger' : 'btn-primary'}`;
+  btn.textContent = danger ? 'Confirmar' : 'Aceptar';
+  confirmCb = onConfirm;
+  modalBg.classList.add('active');
+}
+document.getElementById('modal-confirm').addEventListener('click', () => {
+  modalBg.classList.remove('active'); if (confirmCb) { confirmCb(); confirmCb = null; }
+});
+document.getElementById('modal-cancel').addEventListener('click',  () => { modalBg.classList.remove('active'); confirmCb=null; });
+modalBg.addEventListener('click', e => { if (e.target===modalBg) { modalBg.classList.remove('active'); confirmCb=null; } });
+
+// ── Main tab switching ────────────────────────────────────────────────────
+document.querySelectorAll('.mtab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.getElementById('tab-missing').style.display = tab==='missing' ? 'flex' : 'none';
+    document.getElementById('tab-explore').style.display = tab==='explore' ? 'flex' : 'none';
+    if (tab === 'explore' && !exploreLoaded) loadExplore();
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// TAB 1 — Missing albums
+// ══════════════════════════════════════════════════════════════════════════
+let allAlbums = [], filtered1 = [], selected = new Set();
+let sortCol = 'artist', sortDir = 1;
+
+const tbody      = document.getElementById('albums-body');
+const emptyState = document.getElementById('empty-state');
+const checkAll   = document.getElementById('check-all');
+
 async function loadStats() {
   const s = await api('/api/stats');
-  document.getElementById('s-c1').textContent = s.collection1.toLocaleString();
-  document.getElementById('s-c2').textContent = s.collection2.toLocaleString();
+  document.getElementById('s-c1').textContent      = s.collection1.toLocaleString();
+  document.getElementById('s-c2').textContent      = s.collection2.toLocaleString();
   document.getElementById('s-artists').textContent = s.artists.toLocaleString();
   document.getElementById('s-missing').textContent = s.missing.toLocaleString();
 }
@@ -309,35 +449,35 @@ async function loadAlbums() {
   setLoading(true);
   try {
     const [albums] = await Promise.all([api('/api/albums/missing'), loadStats()]);
-    allAlbums = albums; selected.clear(); applyFilter();
+    allAlbums = albums; selected.clear(); applyFilter1();
   } catch(e) { toast(`Error al cargar: ${e.message}`, 'err'); }
   finally { setLoading(false); }
 }
 
-function applyFilter() {
-  const q = searchInput.value.toLowerCase().trim();
-  filtered = q ? allAlbums.filter(a =>
+function applyFilter1() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  filtered1 = q ? allAlbums.filter(a =>
     (a.artist||'').toLowerCase().includes(q) || (a.title||'').toLowerCase().includes(q) ||
     (a.genre||'').toLowerCase().includes(q)  || (a.label||'').toLowerCase().includes(q)
   ) : [...allAlbums];
-  sortFiltered();
+  sortFiltered1();
 }
 
-function sortFiltered() {
-  filtered.sort((a,b) => {
-    let va = a[sortCol]??'', vb = b[sortCol]??'';
+function sortFiltered1() {
+  filtered1.sort((a,b) => {
+    let va=a[sortCol]??'', vb=b[sortCol]??'';
     if (sortCol==='year') { va=va||0; vb=vb||0; return sortDir*(va-vb); }
-    return sortDir*String(va).localeCompare(String(vb),'es',{sensitivity:'base'});
+    return sortDir * String(va).localeCompare(String(vb), 'es', {sensitivity:'base'});
   });
-  renderTable();
+  renderTable1();
 }
 
-function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function renderTable() {
-  if (!filtered.length) { tbody.innerHTML=''; emptyState.style.display=''; updateSelUI(); return; }
-  emptyState.style.display='none';
-  tbody.innerHTML = filtered.map(a => `
+function renderTable1() {
+  if (!filtered1.length) {
+    tbody.innerHTML = ''; emptyState.style.display = ''; updateSelUI(); return;
+  }
+  emptyState.style.display = 'none';
+  tbody.innerHTML = filtered1.map(a => `
     <tr data-id="${a.id}" class="${selected.has(a.id)?'checked':''}">
       <td><label class="cb-label"><input type="checkbox" class="row-cb" data-id="${a.id}" ${selected.has(a.id)?'checked':''}><span class="cb-box"></span></label></td>
       <td class="td-artist" title="${esc(a.artist)}">${esc(a.artist)}</td>
@@ -346,7 +486,7 @@ function renderTable() {
       <td class="td-genre" title="${esc(a.genre)}">${esc(a.genre)||'—'}</td>
       <td class="td-label" title="${esc(a.label)}">${esc(a.label)||'—'}</td>
       <td><div class="actions">
-        <button class="btn-icon btn-icon-copy" data-id="${a.id}" title="Copiar a C1">
+        <button class="btn-icon btn-icon-copy" data-id="${a.id}" title="Copiar a temp/auto-dietpi">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
         </button>
         <button class="btn-icon btn-icon-del" data-id="${a.id}" title="Eliminar">
@@ -363,10 +503,10 @@ function renderTable() {
 
 function updateSelUI() {
   const n = selected.size;
-  selCountEl.textContent = n ? `${n} seleccionado${n!==1?'s':''}` : '';
-  btnCopySel.disabled = n===0;
-  checkAll.checked = filtered.length>0 && filtered.every(a=>selected.has(a.id));
-  checkAll.indeterminate = n>0 && !checkAll.checked;
+  document.getElementById('sel-count').textContent = n ? `${n} seleccionado${n!==1?'s':''}` : '';
+  document.getElementById('btn-copy-sel').disabled = n === 0;
+  checkAll.checked = filtered1.length > 0 && filtered1.every(a => selected.has(a.id));
+  checkAll.indeterminate = n > 0 && !checkAll.checked;
 }
 
 tbody.addEventListener('change', e => {
@@ -381,14 +521,12 @@ tbody.addEventListener('click', e => {
   const copyBtn = e.target.closest('.btn-icon-copy');
   const delBtn  = e.target.closest('.btn-icon-del');
   if (copyBtn) {
-    const id = +copyBtn.dataset.id;
-    const a = allAlbums.find(x=>x.id===id);
-    confirm('Copiar álbum', `¿Copiar "${a?.title}" de ${a?.artist} a la Colección 1?`, ()=>copyAlbums([id]), false);
+    const id = +copyBtn.dataset.id, a = allAlbums.find(x=>x.id===id);
+    showConfirm('Copiar álbum', `¿Copiar "${a?.title}" a temp/auto-dietpi?`, () => copyAlbums([id]), false);
   }
   if (delBtn) {
-    const id = +delBtn.dataset.id;
-    const a = allAlbums.find(x=>x.id===id);
-    confirm('Eliminar álbum', `¿Eliminar permanentemente "${a?.title}" de ${a?.artist}? Se borrarán los archivos del disco.`, ()=>deleteAlbum(id), true);
+    const id = +delBtn.dataset.id, a = allAlbums.find(x=>x.id===id);
+    showConfirm('Eliminar álbum', `¿Eliminar "${a?.title}" de ${a?.artist}? Se borrarán los archivos.`, () => deleteAlbum(id));
   }
 });
 
@@ -396,31 +534,37 @@ document.querySelectorAll('thead th[data-col]').forEach(th => {
   th.addEventListener('click', () => {
     const col = th.dataset.col;
     if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=1; }
-    document.querySelectorAll('thead th').forEach(t=>t.classList.remove('sorted-asc','sorted-desc'));
-    th.classList.add(sortDir===1?'sorted-asc':'sorted-desc');
-    sortFiltered();
+    document.querySelectorAll('thead th').forEach(t => t.classList.remove('sorted-asc','sorted-desc'));
+    th.classList.add(sortDir===1 ? 'sorted-asc' : 'sorted-desc');
+    sortFiltered1();
   });
 });
 
-checkAll.addEventListener('change', () => { filtered.forEach(a => checkAll.checked ? selected.add(a.id) : selected.delete(a.id)); renderTable(); });
-document.getElementById('btn-select-all').addEventListener('click', () => { filtered.forEach(a=>selected.add(a.id)); renderTable(); });
-document.getElementById('btn-deselect-all').addEventListener('click', () => { selected.clear(); renderTable(); });
+checkAll.addEventListener('change', () => {
+  filtered1.forEach(a => checkAll.checked ? selected.add(a.id) : selected.delete(a.id));
+  renderTable1();
+});
+document.getElementById('btn-select-all').addEventListener('click', () => { filtered1.forEach(a=>selected.add(a.id)); renderTable1(); });
+document.getElementById('btn-deselect-all').addEventListener('click', () => { selected.clear(); renderTable1(); });
 
 let debounceTimer;
-searchInput.addEventListener('input', () => { clearTimeout(debounceTimer); debounceTimer = setTimeout(applyFilter, 200); });
-document.getElementById('btn-refresh').addEventListener('click', loadAlbums);
+document.getElementById('search').addEventListener('input', () => {
+  clearTimeout(debounceTimer); debounceTimer = setTimeout(applyFilter1, 200);
+});
 
-btnCopySel.addEventListener('click', () => {
+document.getElementById('btn-copy-sel').addEventListener('click', () => {
   const ids = [...selected];
-  confirm('Copiar selección', `¿Copiar ${ids.length} álbum${ids.length!==1?'es':''} a la Colección 1?`, ()=>copyAlbums(ids), false);
+  showConfirm('Copiar selección',
+    `¿Copiar ${ids.length} álbum${ids.length!==1?'es':''} a temp/auto-dietpi?`,
+    () => copyAlbums(ids), false);
 });
 
 async function copyAlbums(ids) {
   setLoading(true);
   try {
-    const results = await api('/api/albums/copy', {method:'POST', body:JSON.stringify({ids})});
+    const results = await api('/api/albums/copy', { method:'POST', body:JSON.stringify({ids}) });
     const ok = results.filter(r=>r.success), err = results.filter(r=>!r.success);
-    if (ok.length)  toast(`${ok.length} álbum${ok.length!==1?'es':''} copiado${ok.length!==1?'s':''}.`, 'ok');
+    if (ok.length)  toast(`${ok.length} álbum${ok.length!==1?'es':''} copiado${ok.length!==1?'s':''} a temp/auto-dietpi.`, 'ok');
     if (err.length) toast(`${err.length} error${err.length!==1?'es':''}: ${err.map(r=>r.error).join(', ')}`, 'err', 7000);
     selected.clear(); await loadAlbums();
   } catch(e) { toast(`Error al copiar: ${e.message}`, 'err'); setLoading(false); }
@@ -429,11 +573,157 @@ async function copyAlbums(ids) {
 async function deleteAlbum(id) {
   setLoading(true);
   try {
-    await api(`/api/albums/${id}`, {method:'DELETE'});
+    await api(`/api/albums/${id}`, { method:'DELETE' });
     selected.delete(id); toast('Álbum eliminado.', 'ok'); await loadAlbums();
-  } catch(e) { toast(`Error al eliminar: ${e.message}`, 'err'); setLoading(false); }
+  } catch(e) { toast(`Error: ${e.message}`, 'err'); setLoading(false); }
 }
 
+document.getElementById('btn-refresh').addEventListener('click', () => {
+  loadAlbums();
+  if (exploreLoaded) loadExplore();
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// TAB 2 — Explore (artists / genres / labels)
+// ══════════════════════════════════════════════════════════════════════════
+let exploreData     = [];
+let exploreFiltered = [];
+let exploreView     = 'artists';
+let activeItem      = null;
+let exploreLoaded   = false;
+
+const exploreListEl    = document.getElementById('explore-list');
+const explorePlaceholder = document.getElementById('explore-placeholder');
+const exploreDetailEl  = document.getElementById('explore-detail');
+
+document.querySelectorAll('.etab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.etab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    exploreView = btn.dataset.view;
+    activeItem  = null;
+    explorePlaceholder.style.display = '';
+    exploreDetailEl.style.display    = 'none';
+    loadExplore();
+  });
+});
+
+async function loadExplore() {
+  exploreListEl.innerHTML = '<div class="detail-empty">Cargando…</div>';
+  try {
+    exploreData   = await api(`/api/explore?view=${exploreView}`);
+    exploreLoaded = true;
+    document.getElementById('explore-search').value = '';
+    applyExploreFilter();
+  } catch(e) {
+    exploreListEl.innerHTML = `<div class="detail-empty" style="color:var(--red)">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+function applyExploreFilter() {
+  const q = document.getElementById('explore-search').value.toLowerCase().trim();
+  exploreFiltered = q
+    ? exploreData.filter(r => (r.name||'').toLowerCase().includes(q))
+    : [...exploreData];
+  document.getElementById('explore-count').textContent =
+    `${exploreFiltered.length.toLocaleString()} / ${exploreData.length.toLocaleString()}`;
+  renderExploreList();
+}
+
+function renderExploreList() {
+  if (!exploreFiltered.length) {
+    exploreListEl.innerHTML = '<div class="detail-empty">Sin resultados</div>'; return;
+  }
+  exploreListEl.innerHTML = exploreFiltered.map(r => `
+    <div class="explore-item ${activeItem===r.name?'active':''}" data-name="${esc(r.name)}">
+      <span class="ei-name" title="${esc(r.name)}">${esc(r.name)}</span>
+      <span class="ei-counts">
+        ${r.c1_count ? `<span class="ei-c ei-c1" title="En C1">${r.c1_count}</span>` : ''}
+        ${r.c2_count ? `<span class="ei-c ei-c2" title="En C2">${r.c2_count}</span>` : ''}
+      </span>
+    </div>`).join('');
+}
+
+exploreListEl.addEventListener('click', e => {
+  const item = e.target.closest('.explore-item'); if (!item) return;
+  activeItem = item.dataset.name;
+  renderExploreList();
+  loadDetail(activeItem);
+});
+
+let exploreDebounce;
+document.getElementById('explore-search').addEventListener('input', () => {
+  clearTimeout(exploreDebounce); exploreDebounce = setTimeout(applyExploreFilter, 200);
+});
+
+async function loadDetail(name) {
+  explorePlaceholder.style.display = 'none';
+  exploreDetailEl.style.display    = 'flex';
+
+  const detailTitle    = document.getElementById('detail-title');
+  const detailSubtitle = document.getElementById('detail-subtitle');
+  const detailThead    = document.getElementById('detail-thead');
+  const detailTbody    = document.getElementById('detail-tbody');
+
+  detailTitle.textContent    = name;
+  detailSubtitle.textContent = { artists:'Artista', genres:'Género', labels:'Sello' }[exploreView] || '';
+  detailTbody.innerHTML      = '<tr><td colspan="6" class="detail-empty">Cargando…</td></tr>';
+
+  try {
+    const rows = await api(`/api/explore/albums?view=${exploreView}&name=${encodeURIComponent(name)}`);
+
+    const dotC1 = on => `<span class="col-dot ${on ? 'on-c1' : 'dot-off'}"></span>`;
+    const dotC2 = on => `<span class="col-dot ${on ? 'on-c2' : 'dot-off'}"></span>`;
+
+    if (exploreView === 'artists') {
+      detailThead.innerHTML = `<tr>
+        <th style="width:36%">Álbum</th><th style="width:7%">Año</th>
+        <th style="width:14%">Género</th><th style="width:16%">Sello</th>
+        <th style="width:55px;text-align:center">C1</th>
+        <th style="width:55px;text-align:center">C2</th>
+      </tr>`;
+      detailTbody.innerHTML = rows.length ? rows.map(r => `
+        <tr class="${!r.in_c1 && r.in_c2 ? 'only-c2' : ''}">
+          <td class="dt-title" title="${esc(r.title)}">${esc(r.title)}</td>
+          <td class="dt-sub">${r.year||'—'}</td>
+          <td class="dt-sub" title="${esc(r.genre)}">${esc(r.genre)||'—'}</td>
+          <td class="dt-sub" title="${esc(r.label)}">${esc(r.label)||'—'}</td>
+          <td style="text-align:center">${dotC1(r.in_c1)}</td>
+          <td style="text-align:center">${dotC2(r.in_c2)}</td>
+        </tr>`).join('') : '<tr><td colspan="6" class="detail-empty">Sin álbumes</td></tr>';
+
+    } else {
+      const extraCol = exploreView === 'genres' ? 'Sello' : 'Género';
+      const extraKey = exploreView === 'genres' ? 'label' : 'genre';
+      detailThead.innerHTML = `<tr>
+        <th style="width:22%">Artista</th><th style="width:30%">Álbum</th>
+        <th style="width:7%">Año</th><th style="width:18%">${extraCol}</th>
+        <th style="width:55px;text-align:center">C1</th>
+        <th style="width:55px;text-align:center">C2</th>
+      </tr>`;
+      detailTbody.innerHTML = rows.length ? rows.map(r => `
+        <tr class="${!r.in_c1 && r.in_c2 ? 'only-c2' : ''}">
+          <td class="dt-text" title="${esc(r.artist)}">${esc(r.artist)}</td>
+          <td class="dt-title" title="${esc(r.title)}">${esc(r.title)}</td>
+          <td class="dt-sub">${r.year||'—'}</td>
+          <td class="dt-sub" title="${esc(r[extraKey])}">${esc(r[extraKey])||'—'}</td>
+          <td style="text-align:center">${dotC1(r.in_c1)}</td>
+          <td style="text-align:center">${dotC2(r.in_c2)}</td>
+        </tr>`).join('') : '<tr><td colspan="6" class="detail-empty">Sin álbumes</td></tr>';
+    }
+
+    const total   = rows.length;
+    const missing = rows.filter(r => !r.in_c1 && r.in_c2).length;
+    detailSubtitle.textContent =
+      `${total} álbume${total!==1?'s':''}` +
+      (missing ? ` · ${missing} solo en C2` : ' · completo en C1');
+
+  } catch(e) {
+    detailTbody.innerHTML = `<tr><td colspan="6" class="detail-empty" style="color:var(--red)">Error: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
 loadAlbums();
 </script>
 </body>

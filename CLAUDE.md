@@ -14,10 +14,10 @@ Music collection sync tool with two web interfaces:
 ```bash
 pip install -r requirements.txt
 
-# Edit config.py or set env vars:
-export COLLECTION_1_PATH=/mnt/music/coleccion1
-export COLLECTION_2_PATH=/mnt/music/coleccion2
-export TEMP_PATH=/mnt/music/coleccion1/temp   # defaults to COLLECTION_1_PATH/temp
+# Edit config.py or set env vars (actual paths come from .encrypted.env via sops):
+export COLLECTION_1_PATH=/ruta/al/nas/moode/moode
+export COLLECTION_2_PATH=/ruta/al/nas/lidar/torrents_backup
+export TEMP_PATH=/ruta/al/nas/moode/moode/temp/auto-dietpi  # default: COLLECTION_1_PATH/temp/auto-dietpi
 
 # Airsonic (optional, for /temp page):
 export AIRSONIC_URL=http://localhost:4040
@@ -53,11 +53,13 @@ One `artists` row per unique name (case-insensitive). Albums in `temp/` are stor
 |----------|-------------------------------|------------------------------------------------------------|
 | GET      | `/api/stats`                  | Counts for both collections, artists, missing              |
 | GET      | `/api/albums/missing`         | Albums in C2 with no matching artist+title in C1           |
-| POST     | `/api/albums/copy`            | `{ids:[…]}` — copy C2→C1, preserving relative path        |
+| POST     | `/api/albums/copy`            | `{ids:[…]}` — copy C2 → `TEMP_PATH/YYYY-MM-DD/album`      |
 | DELETE   | `/api/albums/<id>`            | Delete album from disk + DB                                |
 | GET      | `/api/temp/albums`            | Temp albums with `is_duplicate` flag                       |
 | GET      | `/api/temp/stats`             | `{total, duplicates, unique}` for temp folder              |
 | DELETE   | `/api/temp/albums/<id>`       | Delete from temp only (403 if path escapes TEMP_PATH)      |
+| GET      | `/api/explore`                | `?view=artists\|genres\|labels` — aggregate counts C1/C2   |
+| GET      | `/api/explore/albums`         | `?view=…&name=…` — albums for a group with in_c1/in_c2     |
 | GET      | `/api/airsonic/search`        | `?artist=&album=` — proxy search to Subsonic API           |
 | GET      | `/api/airsonic/coverart`      | `?id=` — proxy cover art image (avoids browser CORS)       |
 | POST     | `/api/airsonic/play`          | `{albumId}` — jukebox set+start via Subsonic API           |
