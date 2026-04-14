@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEMP — Álbumes Temporales</title>
+<style>
+  :root {
+    --green:       #00ff41;
+    --green-dim:   #00cc33;
+    --green-dark:  #003310;
+    --green-glow:  0 0 8px #00ff4166;
+    --green-glow2: 0 0 16px #00ff4188;
+    --bg:          #080808;
+    --bg2:         #0d0d0d;
+    --bg3:         #111;
+    --border:      #1a2e1a;
+    --border-hi:   #00ff4133;
+    --text:        #b0b0b0;
+    --text-hi:     #e8e8e8;
+    --red:         #ff3333;
+    --amber:       #ffaa00;
+    --amber-dark:  #2a1a00;
+    --amber-glow:  0 0 8px #ffaa0066;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text);
+    font-family: 'JetBrains Mono','Fira Mono','Consolas',monospace; font-size: 13px; line-height: 1.5; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
+
+  /* ── Header ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; gap: 1.5rem;
+    padding: 0 1.5rem; height: 52px;
+    background: var(--bg); border-bottom: 1px solid var(--border-hi);
+    box-shadow: 0 2px 20px #000a;
+  }
+  .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: .2em; color: var(--green);
+    text-shadow: var(--green-glow2); white-space: nowrap; }
+  .logo span { color: var(--text); font-weight: 400; }
+  nav { display: flex; gap: .25rem; }
+  .nav-link { padding: .3rem .8rem; border-radius: 3px; font-size: .75rem; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase; text-decoration: none;
+    border: 1px solid transparent; transition: all .15s; color: var(--text); }
+  .nav-link:hover  { border-color: var(--border-hi); color: var(--green); background: var(--green-dark); }
+  .nav-link.active { border-color: var(--green-dim); color: var(--green); }
+
+  /* ── Stats ── */
+  .stats-bar { display: flex; gap: 1.5rem; flex-wrap: wrap;
+    padding: .6rem 1.5rem; background: var(--bg2); border-bottom: 1px solid var(--border); }
+  .stat { display: flex; align-items: center; gap: .4rem; }
+  .stat-label { color: #555; font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; }
+  .stat-value { color: var(--green); font-size: .95rem; font-weight: 700; }
+  .stat-value.dup { color: var(--amber); text-shadow: var(--amber-glow); }
+
+  /* ── Toolbar ── */
+  .toolbar { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+    padding: .65rem 1.5rem; background: var(--bg2); border-bottom: 1px solid var(--border); }
+  .search-wrap { position: relative; flex: 1; min-width: 160px; max-width: 300px; }
+  .search-wrap svg { position: absolute; left: .6rem; top: 50%; transform: translateY(-50%);
+    width: 14px; height: 14px; color: #444; pointer-events: none; }
+  input[type="search"] {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text-hi); padding: .38rem .75rem .38rem 2rem;
+    border-radius: 3px; outline: none; font-family: inherit; font-size: .85rem;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  input[type="search"]:focus { border-color: var(--green-dim); box-shadow: var(--green-glow); }
+
+  /* Filter tabs */
+  .filter-tabs { display: flex; gap: 2px; }
+  .tab {
+    padding: .3rem .7rem; border-radius: 3px; font-size: .75rem; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--border);
+    background: transparent; cursor: pointer; transition: all .15s; color: #555; font-family: inherit;
+  }
+  .tab:hover { border-color: var(--border-hi); color: var(--text); }
+  .tab.active { border-color: var(--green-dim); color: var(--green); background: var(--green-dark); }
+  .tab.active-dup { border-color: var(--amber); color: var(--amber); background: var(--amber-dark); }
+
+  .btn { display: inline-flex; align-items: center; gap: .4rem;
+    padding: .38rem .85rem; border-radius: 3px; border: 1px solid;
+    font-family: inherit; font-size: .78rem; font-weight: 600;
+    cursor: pointer; letter-spacing: .05em; white-space: nowrap;
+    transition: all .15s; text-transform: uppercase; }
+  .btn:disabled { opacity: .3; cursor: not-allowed; }
+  .btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+  .btn-primary { background: var(--green); border-color: var(--green); color: #000; }
+  .btn-primary:not(:disabled):hover { background: #fff; border-color: #fff; box-shadow: var(--green-glow2); }
+  .btn-ghost { background: transparent; border-color: var(--green-dim); color: var(--green); }
+  .btn-ghost:not(:disabled):hover { background: var(--green-dark); box-shadow: var(--green-glow); }
+  .btn-amber { background: transparent; border-color: var(--amber); color: var(--amber); }
+  .btn-amber:not(:disabled):hover { background: var(--amber-dark); box-shadow: var(--amber-glow); }
+  .btn-danger { background: transparent; border-color: var(--red); color: var(--red); }
+  .btn-danger:not(:disabled):hover { background: #2a0000; }
+  .spacer { flex: 1; }
+  .sel-count { color: var(--green-dim); font-size: .8rem; min-width: 6ch; text-align: right; }
+
+  /* ── Table ── */
+  .table-wrap { overflow: auto; height: calc(100vh - 52px - 42px - 52px); }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  colgroup col:nth-child(1) { width: 36px; }
+  colgroup col:nth-child(2) { width: 20%; }
+  colgroup col:nth-child(3) { width: 24%; }
+  colgroup col:nth-child(4) { width: 5%; }
+  colgroup col:nth-child(5) { width: 11%; }
+  colgroup col:nth-child(6) { width: 13%; }
+  colgroup col:nth-child(7) { width: 96px; } /* dup badge */
+  colgroup col:nth-child(8) { width: 100px; } /* actions */
+  thead th {
+    position: sticky; top: 0; z-index: 10; background: #0a1a0a;
+    color: var(--green-dim); font-size: .7rem; text-transform: uppercase; letter-spacing: .12em;
+    font-weight: 600; padding: .5rem .7rem; border-bottom: 1px solid var(--border-hi);
+    text-align: left; white-space: nowrap; user-select: none; cursor: pointer;
+  }
+  thead th:first-child, thead th:last-child, thead th:nth-child(7) { cursor: default; }
+  thead th:first-child { text-align: center; }
+  thead th.sorted-asc::after  { content: ' ↑'; color: var(--green); }
+  thead th.sorted-desc::after { content: ' ↓'; color: var(--green); }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+  tbody tr:hover { background: #111a11; }
+  tbody tr.checked { background: #0a1e0a; }
+  tbody tr.is-dup  { background: #161006; }
+  tbody tr.is-dup:hover { background: #1e1608; }
+  tbody tr.is-dup.checked { background: #1a1a06; }
+
+  td { padding: .42rem .7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td:first-child { text-align: center; vertical-align: middle; }
+  .td-artist { color: var(--text-hi); font-weight: 500; }
+  .td-title  { color: var(--green); }
+  .td-year   { color: #888; }
+  .td-genre  { color: #6a9e6a; font-size: .8rem; }
+  .td-label  { color: #666; font-size: .8rem; }
+
+  /* Duplicate badge */
+  .badge-dup {
+    display: inline-flex; align-items: center; gap: .25rem;
+    padding: .15rem .45rem; border-radius: 2px; font-size: .68rem; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    background: var(--amber-dark); border: 1px solid var(--amber); color: var(--amber);
+    box-shadow: var(--amber-glow);
+  }
+  .badge-dup svg { width: 10px; height: 10px; }
+
+  /* Checkbox */
+  input[type="checkbox"] { display: none; }
+  .cb-box { display: inline-block; width: 14px; height: 14px; border: 1px solid #333;
+    border-radius: 2px; background: var(--bg); transition: all .1s; cursor: pointer; position: relative; }
+  input[type="checkbox"]:checked + .cb-box { background: var(--green); border-color: var(--green); box-shadow: var(--green-glow); }
+  input[type="checkbox"]:checked + .cb-box::after { content: ''; position: absolute; left: 3px; top: 1px;
+    width: 5px; height: 8px; border: 2px solid #000; border-top: none; border-left: none; transform: rotate(45deg); }
+  label.cb-label { display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+  /* Action buttons */
+  .actions { display: flex; gap: .3rem; align-items: center; }
+  .btn-icon { display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 3px; border: 1px solid;
+    background: transparent; cursor: pointer; transition: all .15s; flex-shrink: 0; }
+  .btn-icon svg { width: 12px; height: 12px; }
+  .btn-icon-play { border-color: #1a2e1a; color: #446644; }
+  .btn-icon-play:hover { border-color: var(--green); color: var(--green); background: var(--green-dark); box-shadow: var(--green-glow); }
+  .btn-icon-del  { border-color: #3a1111; color: #663333; }
+  .btn-icon-del:hover  { border-color: var(--red); color: var(--red); background: #1a0000; }
+
+  /* Empty */
+  .empty { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; gap: 1rem; color: #333; padding: 3rem; text-align: center; }
+  .empty svg { width: 48px; height: 48px; color: #222; }
+
+  /* ── Loading ── */
+  #loading-overlay { position: fixed; inset: 0; z-index: 999; background: #000d;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+    opacity: 0; pointer-events: none; transition: opacity .2s; }
+  #loading-overlay.active { opacity: 1; pointer-events: all; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--green-dark);
+    border-top-color: var(--green); border-radius: 50%;
+    animation: spin .7s linear infinite; box-shadow: var(--green-glow2); }
+  #loading-msg { color: var(--green-dim); font-size: .8rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Toasts ── */
+  #toasts { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 1000;
+    display: flex; flex-direction: column; gap: .5rem; pointer-events: none; }
+  .toast { display: flex; align-items: center; gap: .6rem; padding: .6rem 1rem;
+    border-radius: 4px; font-size: .8rem; border: 1px solid; max-width: 360px;
+    animation: slideIn .25s ease-out; pointer-events: all; }
+  .toast svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .toast-ok    { background: #0a1a0a; border-color: var(--green-dim); color: var(--green); }
+  .toast-err   { background: #1a0a0a; border-color: var(--red); color: var(--red); }
+  .toast-info  { background: #100e00; border-color: var(--amber); color: var(--amber); }
+  @keyframes slideIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* ── Confirm modal ── */
+  .modal-bg { position: fixed; inset: 0; z-index: 200; background: #000b;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .modal-bg.active { opacity: 1; pointer-events: all; }
+  .modal { background: var(--bg3); border: 1px solid var(--border-hi);
+    box-shadow: 0 0 40px #00ff4122; border-radius: 6px; padding: 2rem;
+    min-width: 340px; max-width: 500px; display: flex; flex-direction: column; gap: 1.2rem; }
+  .modal h3 { color: var(--green); font-size: .95rem; letter-spacing: .1em; text-transform: uppercase; }
+  .modal p  { color: var(--text); font-size: .85rem; line-height: 1.7; }
+  .modal-actions { display: flex; gap: .6rem; justify-content: flex-end; }
+
+  /* ── Airsonic search modal ── */
+  #airsonic-modal { display: none; }
+  #airsonic-modal.active { display: flex; }
+  .as-results { display: flex; flex-direction: column; gap: .5rem; max-height: 320px; overflow-y: auto; }
+  .as-result {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .6rem .8rem; border-radius: 4px; border: 1px solid var(--border);
+    background: var(--bg2); cursor: pointer; transition: all .15s;
+  }
+  .as-result:hover { border-color: var(--green-dim); background: var(--green-dark); }
+  .as-cover { width: 44px; height: 44px; border-radius: 3px; object-fit: cover;
+    border: 1px solid var(--border); background: #0d0d0d; flex-shrink: 0; }
+  .as-cover-ph { width: 44px; height: 44px; border-radius: 3px; border: 1px solid var(--border);
+    background: #0d0d0d; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: #333; }
+  .as-cover-ph svg { width: 20px; height: 20px; }
+  .as-info { flex: 1; overflow: hidden; }
+  .as-title  { color: var(--green); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .as-artist { color: #888; font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .as-meta   { color: #555; font-size: .75rem; }
+  .as-actions { display: flex; gap: .4rem; flex-shrink: 0; }
+  .as-empty  { color: #444; text-align: center; padding: 1.5rem; font-size: .85rem; }
+  .as-searching { color: var(--green-dim); text-align: center; padding: 1.5rem;
+    display: flex; align-items: center; justify-content: center; gap: .5rem; }
+  .as-spinner { width: 14px; height: 14px; border: 2px solid var(--green-dark);
+    border-top-color: var(--green); border-radius: 50%; animation: spin .6s linear infinite; }
+
+  /* Playlist modal extras */
+  .pl-info { background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 4px; padding: .75rem 1rem; }
+  .pl-info .pl-row { display: flex; justify-content: space-between; margin-bottom: .3rem; }
+  .pl-info .pl-row:last-child { margin-bottom: 0; }
+  .pl-key   { color: #555; font-size: .8rem; }
+  .pl-val   { color: var(--green); font-size: .8rem; font-weight: 600; }
+  .pl-val.warn { color: var(--amber); }
+  input[type="text"] {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text-hi); padding: .4rem .75rem;
+    border-radius: 3px; outline: none; font-family: inherit; font-size: .85rem;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  input[type="text"]:focus { border-color: var(--green-dim); box-shadow: var(--green-glow); }
+  label.field-label { display: block; color: #555; font-size: .75rem; text-transform: uppercase;
+    letter-spacing: .1em; margin-bottom: .4rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">TEMP <span>// álbumes temporales</span></div>
+  <nav>
+    <a class="nav-link" href="/">Trasvase</a>
+    <a class="nav-link active" href="/temp">Temp</a>
+  </nav>
+  <div class="spacer"></div>
+  <button class="btn btn-ghost" id="btn-refresh">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </svg>
+    Actualizar
+  </button>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><span class="stat-label">En temp</span><span class="stat-value" id="s-total">—</span></div>
+  <div class="stat"><span class="stat-label">Duplicados</span><span class="stat-value dup" id="s-dupes">—</span></div>
+  <div class="stat"><span class="stat-label">Únicos</span><span class="stat-value" id="s-unique">—</span></div>
+</div>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="search" id="search" placeholder="Filtrar artista, álbum…">
+  </div>
+
+  <div class="filter-tabs">
+    <button class="tab active"     data-filter="all">Todos</button>
+    <button class="tab"            data-filter="dup">Duplicados</button>
+    <button class="tab"            data-filter="unique">Únicos</button>
+  </div>
+
+  <button class="btn btn-ghost" id="btn-select-all">Selec. todo</button>
+  <button class="btn btn-ghost" id="btn-select-dups">Selec. dupl.</button>
+  <button class="btn btn-ghost" id="btn-deselect">Limpiar</button>
+
+  <div class="spacer"></div>
+  <span class="sel-count" id="sel-count"></span>
+
+  <button class="btn btn-danger" id="btn-delete-sel" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="3 6 5 6 21 6"/>
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+    </svg>
+    Borrar selección
+  </button>
+
+  <button class="btn btn-amber" id="btn-playlist">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+      <line x1="8" y1="18" x2="21" y2="18"/>
+      <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+      <line x1="3" y1="18" x2="3.01" y2="18"/>
+    </svg>
+    Playlist Airsonic
+  </button>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <colgroup><col><col><col><col><col><col><col><col></colgroup>
+    <thead>
+      <tr>
+        <th><label class="cb-label"><input type="checkbox" id="check-all"><span class="cb-box"></span></label></th>
+        <th data-col="artist">Artista</th>
+        <th data-col="title">Álbum</th>
+        <th data-col="year">Año</th>
+        <th data-col="genre">Género</th>
+        <th data-col="label">Sello</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="albums-body"></tbody>
+  </table>
+  <div class="empty" id="empty-state" style="display:none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"/>
+    </svg>
+    <p>No hay álbumes en la carpeta temp<br>o no hay resultados para el filtro.</p>
+  </div>
+</div>
+
+<!-- ── Loading ── -->
+<div id="loading-overlay"><div class="spinner"></div><span id="loading-msg"></span></div>
+
+<!-- ── Toasts ── -->
+<div id="toasts"></div>
+
+<!-- ── Confirm modal ── -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3 id="modal-title">Confirmar</h3>
+    <p id="modal-body"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="modal-confirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Airsonic search modal ── -->
+<div class="modal-bg" id="airsonic-modal">
+  <div class="modal" style="min-width:480px;max-width:560px;">
+    <h3 id="as-modal-title">Buscar en Airsonic</h3>
+    <p id="as-modal-subtitle" style="color:#555;font-size:.8rem;"></p>
+    <div id="as-results-wrap" class="as-results"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="as-modal-close">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Playlist modal ── -->
+<div class="modal-bg" id="playlist-modal">
+  <div class="modal">
+    <h3>Crear Playlist en Airsonic</h3>
+    <p style="color:#555;font-size:.8rem;">
+      Se buscará cada álbum de temp en Airsonic y se creará una playlist con todas las pistas encontradas.
+    </p>
+    <div>
+      <label class="field-label" for="pl-name">Nombre de la playlist</label>
+      <input type="text" id="pl-name" placeholder="Temp 2025-01-01">
+    </div>
+    <div id="pl-result" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="pl-cancel">Cancelar</button>
+      <button class="btn btn-amber" id="pl-confirm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+        </svg>
+        Crear
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let allAlbums = [], filtered = [], selected = new Set();
+let sortCol = 'artist', sortDir = 1;
+let filterMode = 'all';  // 'all' | 'dup' | 'unique'
+let confirmCb = null;
+
+// ── DOM ────────────────────────────────────────────────────────────────────
+const tbody       = document.getElementById('albums-body');
+const emptyState  = document.getElementById('empty-state');
+const searchInput = document.getElementById('search');
+const checkAll    = document.getElementById('check-all');
+const selCountEl  = document.getElementById('sel-count');
+const btnDeleteSel= document.getElementById('btn-delete-sel');
+const loading     = document.getElementById('loading-overlay');
+const loadingMsg  = document.getElementById('loading-msg');
+const toastsCont  = document.getElementById('toasts');
+
+// ── Loader ─────────────────────────────────────────────────────────────────
+function setLoading(on, msg='') {
+  loading.classList.toggle('active', on);
+  loadingMsg.textContent = msg;
+}
+
+// ── Toasts ─────────────────────────────────────────────────────────────────
+const ICONS = {
+  ok:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+  err:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+};
+function toast(msg, type='ok', dur=4000) {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `${ICONS[type]}<span>${msg}</span>`;
+  toastsCont.appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+// ── Confirm modal ──────────────────────────────────────────────────────────
+const modalBg      = document.getElementById('modal-bg');
+const modalTitle   = document.getElementById('modal-title');
+const modalBody    = document.getElementById('modal-body');
+const modalConfirm = document.getElementById('modal-confirm');
+const modalCancel  = document.getElementById('modal-cancel');
+
+function confirm(title, body, onConfirm) {
+  modalTitle.textContent = title; modalBody.textContent = body;
+  confirmCb = onConfirm; modalBg.classList.add('active');
+}
+modalConfirm.addEventListener('click', () => { modalBg.classList.remove('active'); if (confirmCb) { confirmCb(); confirmCb = null; } });
+modalCancel.addEventListener('click',  () => { modalBg.classList.remove('active'); confirmCb = null; });
+modalBg.addEventListener('click', e => { if (e.target === modalBg) { modalBg.classList.remove('active'); confirmCb = null; } });
+
+// ── API ────────────────────────────────────────────────────────────────────
+async function api(url, opts={}) {
+  const res = await fetch(url, { headers: {'Content-Type':'application/json'}, ...opts });
+  if (!res.ok) { const e = await res.json().catch(() => ({error: res.statusText})); throw new Error(e.error || res.statusText); }
+  return res.json();
+}
+
+// ── Load data ──────────────────────────────────────────────────────────────
+async function loadAlbums() {
+  setLoading(true);
+  try {
+    const [albums, stats] = await Promise.all([
+      api('/api/temp/albums'),
+      api('/api/temp/stats'),
+    ]);
+    allAlbums = albums;
+    selected.clear();
+    document.getElementById('s-total').textContent  = stats.total.toLocaleString();
+    document.getElementById('s-dupes').textContent  = stats.duplicates.toLocaleString();
+    document.getElementById('s-unique').textContent = stats.unique.toLocaleString();
+    applyFilter();
+  } catch(e) { toast(`Error al cargar: ${e.message}`, 'err'); }
+  finally { setLoading(false); }
+}
+
+// ── Filter & sort ──────────────────────────────────────────────────────────
+function applyFilter() {
+  const q = searchInput.value.toLowerCase().trim();
+  filtered = allAlbums.filter(a => {
+    if (filterMode === 'dup'    && !a.is_duplicate) return false;
+    if (filterMode === 'unique' &&  a.is_duplicate) return false;
+    if (!q) return true;
+    return (a.artist||'').toLowerCase().includes(q) ||
+           (a.title ||'').toLowerCase().includes(q) ||
+           (a.genre ||'').toLowerCase().includes(q) ||
+           (a.label ||'').toLowerCase().includes(q);
+  });
+  sortFiltered();
+}
+
+function sortFiltered() {
+  filtered.sort((a,b) => {
+    let va = a[sortCol]??'', vb = b[sortCol]??'';
+    if (sortCol==='year') { va=va||0; vb=vb||0; return sortDir*(va-vb); }
+    return sortDir*String(va).localeCompare(String(vb),'es',{sensitivity:'base'});
+  });
+  renderTable();
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+const DUP_BADGE = `<span class="badge-dup">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+  </svg>
+  Duplicado
+</span>`;
+
+function renderTable() {
+  if (!filtered.length) { tbody.innerHTML=''; emptyState.style.display=''; updateSelUI(); return; }
+  emptyState.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(a => `
+    <tr data-id="${a.id}" class="${[selected.has(a.id)?'checked':'', a.is_duplicate?'is-dup':''].filter(Boolean).join(' ')}">
+      <td><label class="cb-label"><input type="checkbox" class="row-cb" data-id="${a.id}" ${selected.has(a.id)?'checked':''}><span class="cb-box"></span></label></td>
+      <td class="td-artist" title="${esc(a.artist)}">${esc(a.artist)}</td>
+      <td class="td-title"  title="${esc(a.title)}">${esc(a.title)}</td>
+      <td class="td-year">${a.year||'—'}</td>
+      <td class="td-genre" title="${esc(a.genre)}">${esc(a.genre)||'—'}</td>
+      <td class="td-label" title="${esc(a.label)}">${esc(a.label)||'—'}</td>
+      <td>${a.is_duplicate ? DUP_BADGE : ''}</td>
+      <td><div class="actions">
+        <button class="btn-icon btn-icon-play" data-id="${a.id}"
+                data-artist="${esc(a.artist)}" data-title="${esc(a.title)}"
+                title="Buscar y reproducir en Airsonic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="btn-icon btn-icon-del" data-id="${a.id}" title="Eliminar de temp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </button>
+      </div></td>
+    </tr>`).join('');
+
+  updateSelUI();
+}
+
+function updateSelUI() {
+  const n = selected.size;
+  selCountEl.textContent  = n ? `${n} seleccionado${n!==1?'s':''}` : '';
+  btnDeleteSel.disabled   = n===0;
+  checkAll.checked        = filtered.length>0 && filtered.every(a=>selected.has(a.id));
+  checkAll.indeterminate  = n>0 && !checkAll.checked;
+}
+
+// ── Table events ───────────────────────────────────────────────────────────
+tbody.addEventListener('change', e => {
+  const cb = e.target.closest('.row-cb'); if (!cb) return;
+  const id = +cb.dataset.id;
+  cb.checked ? selected.add(id) : selected.delete(id);
+  const row = tbody.querySelector(`tr[data-id="${id}"]`);
+  if (row) row.classList.toggle('checked', cb.checked);
+  updateSelUI();
+});
+
+tbody.addEventListener('click', e => {
+  const playBtn = e.target.closest('.btn-icon-play');
+  const delBtn  = e.target.closest('.btn-icon-del');
+
+  if (playBtn) {
+    openAirsonicModal(playBtn.dataset.artist, playBtn.dataset.title);
+  }
+  if (delBtn) {
+    const id = +delBtn.dataset.id;
+    const a  = allAlbums.find(x=>x.id===id);
+    confirm('Eliminar álbum',
+      `¿Eliminar "${a?.title}" de ${a?.artist} de la carpeta temp?\nSe borrarán los archivos del disco.`,
+      () => deleteAlbum(id)
+    );
+  }
+});
+
+// ── Sort ───────────────────────────────────────────────────────────────────
+document.querySelectorAll('thead th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=1; }
+    document.querySelectorAll('thead th').forEach(t=>t.classList.remove('sorted-asc','sorted-desc'));
+    th.classList.add(sortDir===1?'sorted-asc':'sorted-desc');
+    sortFiltered();
+  });
+});
+
+// ── Filter tabs ────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => { t.classList.remove('active','active-dup'); });
+    filterMode = tab.dataset.filter;
+    tab.classList.add(filterMode==='dup' ? 'active-dup' : 'active');
+    applyFilter();
+  });
+});
+
+// ── Select controls ────────────────────────────────────────────────────────
+checkAll.addEventListener('change', () => {
+  filtered.forEach(a => checkAll.checked ? selected.add(a.id) : selected.delete(a.id));
+  renderTable();
+});
+document.getElementById('btn-select-all').addEventListener('click', () => {
+  filtered.forEach(a => selected.add(a.id)); renderTable();
+});
+document.getElementById('btn-select-dups').addEventListener('click', () => {
+  allAlbums.filter(a=>a.is_duplicate).forEach(a=>selected.add(a.id)); renderTable();
+});
+document.getElementById('btn-deselect').addEventListener('click', () => {
+  selected.clear(); renderTable();
+});
+
+// ── Search ─────────────────────────────────────────────────────────────────
+let debounceTimer;
+searchInput.addEventListener('input', () => {
+  clearTimeout(debounceTimer); debounceTimer = setTimeout(applyFilter, 200);
+});
+document.getElementById('btn-refresh').addEventListener('click', loadAlbums);
+
+// ── Delete selected ────────────────────────────────────────────────────────
+btnDeleteSel.addEventListener('click', () => {
+  const ids = [...selected];
+  confirm('Borrar selección',
+    `¿Eliminar ${ids.length} álbum${ids.length!==1?'es':''} de la carpeta temp?\nEsta acción borrará los archivos del disco y no se puede deshacer.`,
+    () => deleteBatch(ids)
+  );
+});
+
+async function deleteAlbum(id) {
+  setLoading(true);
+  try {
+    await api(`/api/temp/albums/${id}`, {method:'DELETE'});
+    selected.delete(id); toast('Álbum eliminado.', 'ok'); await loadAlbums();
+  } catch(e) { toast(`Error: ${e.message}`, 'err'); setLoading(false); }
+}
+
+async function deleteBatch(ids) {
+  setLoading(true, `Eliminando ${ids.length} álbumes…`);
+  let ok=0, errs=[];
+  for (const id of ids) {
+    try { await api(`/api/temp/albums/${id}`, {method:'DELETE'}); ok++; selected.delete(id); }
+    catch(e) { errs.push(e.message); }
+  }
+  if (ok)        toast(`${ok} álbum${ok!==1?'es':''} eliminado${ok!==1?'s':''}.`, 'ok');
+  if (errs.length) toast(`${errs.length} error${errs.length!==1?'es':''}.`, 'err');
+  await loadAlbums();
+}
+
+// ── Airsonic search modal ──────────────────────────────────────────────────
+const asModal     = document.getElementById('airsonic-modal');
+const asTitle     = document.getElementById('as-modal-title');
+const asSubtitle  = document.getElementById('as-modal-subtitle');
+const asResultsWrap = document.getElementById('as-results-wrap');
+
+document.getElementById('as-modal-close').addEventListener('click', () => asModal.classList.remove('active'));
+asModal.addEventListener('click', e => { if (e.target===asModal) asModal.classList.remove('active'); });
+
+async function openAirsonicModal(artist, title) {
+  asTitle.textContent    = 'Buscar en Airsonic';
+  asSubtitle.textContent = `${artist} — ${title}`;
+  asResultsWrap.innerHTML = `<div class="as-searching"><div class="as-spinner"></div> Buscando…</div>`;
+  asModal.classList.add('active');
+
+  try {
+    const results = await api(`/api/airsonic/search?artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(title)}`);
+    if (!results.length) {
+      asResultsWrap.innerHTML = `<div class="as-empty">No se encontró "<strong>${esc(title)}</strong>" en Airsonic.</div>`;
+      return;
+    }
+    asResultsWrap.innerHTML = results.map(r => `
+      <div class="as-result" data-id="${esc(r.id)}">
+        ${r.coverArt
+          ? `<img class="as-cover" src="${esc(r.coverArt)}" alt="" loading="lazy">`
+          : `<div class="as-cover-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+               <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+             </svg></div>`
+        }
+        <div class="as-info">
+          <div class="as-title">${esc(r.name)}</div>
+          <div class="as-artist">${esc(r.artist)}</div>
+          <div class="as-meta">${r.year||''} ${r.songCount!=null ? '· '+r.songCount+' pistas' : ''}</div>
+        </div>
+        <div class="as-actions">
+          <button class="btn btn-primary btn-play-jukebox" data-id="${esc(r.id)}" title="Reproducir via Jukebox">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px">
+              <polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/>
+            </svg>
+            Play
+          </button>
+        </div>
+      </div>`).join('');
+
+    // Play buttons
+    asResultsWrap.querySelectorAll('.btn-play-jukebox').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true; btn.textContent = '…';
+        try {
+          const res = await api('/api/airsonic/play', {method:'POST', body: JSON.stringify({albumId: btn.dataset.id})});
+          toast(`Reproduciendo ${res.tracks} pistas en Airsonic.`, 'ok');
+          asModal.classList.remove('active');
+        } catch(e) {
+          toast(`Error al reproducir: ${e.message}`, 'err');
+          btn.disabled = false; btn.textContent = 'Play';
+        }
+      });
+    });
+
+  } catch(e) {
+    asResultsWrap.innerHTML = `<div class="as-empty" style="color:#ff3333;">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+// ── Playlist modal ─────────────────────────────────────────────────────────
+const plModal   = document.getElementById('playlist-modal');
+const plName    = document.getElementById('pl-name');
+const plResult  = document.getElementById('pl-result');
+const plConfirm = document.getElementById('pl-confirm');
+const plCancel  = document.getElementById('pl-cancel');
+
+function todayStr() {
+  return new Date().toLocaleDateString('es-ES', {year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
+}
+
+document.getElementById('btn-playlist').addEventListener('click', () => {
+  plName.value = `Temp ${todayStr()}`;
+  plResult.style.display = 'none';
+  plResult.innerHTML = '';
+  plConfirm.disabled = false;
+  plConfirm.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg> Crear`;
+  plModal.classList.add('active');
+});
+plCancel.addEventListener('click', () => plModal.classList.remove('active'));
+plModal.addEventListener('click', e => { if (e.target===plModal) plModal.classList.remove('active'); });
+
+plConfirm.addEventListener('click', async () => {
+  const name = plName.value.trim();
+  if (!name) { plName.focus(); return; }
+  plConfirm.disabled = true;
+  plConfirm.textContent = 'Creando…';
+  plResult.style.display = 'none';
+
+  try {
+    const res = await api('/api/airsonic/playlist/temp', {
+      method: 'POST',
+      body: JSON.stringify({name}),
+    });
+    plResult.style.display = '';
+    const notFoundHtml = res.notFound?.length
+      ? `<div class="pl-row"><span class="pl-key">No encontrados</span><span class="pl-val warn">${res.notFound.length}</span></div>`
+      : '';
+    plResult.innerHTML = `<div class="pl-info">
+      <div class="pl-row"><span class="pl-key">Playlist</span><span class="pl-val">${esc(res.name||name)}</span></div>
+      <div class="pl-row"><span class="pl-key">Pistas añadidas</span><span class="pl-val">${res.songCount}</span></div>
+      ${notFoundHtml}
+    </div>`;
+    toast(`Playlist "${name}" creada con ${res.songCount} pistas.`, 'info');
+    plConfirm.textContent = 'Cerrar';
+    plConfirm.disabled = false;
+    plConfirm.onclick = () => { plModal.classList.remove('active'); plConfirm.onclick = null; };
+  } catch(e) {
+    plResult.style.display = '';
+    plResult.innerHTML = `<div style="color:var(--red);font-size:.85rem;">Error: ${esc(e.message)}</div>`;
+    plConfirm.disabled = false;
+    plConfirm.innerHTML = 'Reintentar';
+  }
+});
+
+// ── Init ───────────────────────────────────────────────────────────────────
+loadAlbums();
+</script>
+</body>
+</html>
