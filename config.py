@@ -1,7 +1,11 @@
 import os
 from sops_env import load_sops_env
 
-load_sops_env()
+try:
+    load_sops_env()
+except FileNotFoundError:
+    # En Docker las variables llegan ya descifradas vía docker-compose (scripts/up.sh)
+    print("Aviso: no se encontró .encrypted.env; usando variables de entorno ya exportadas")
 
 COLLECTION_1_PATH = os.environ.get("COLLECTION_1_PATH", "/mnt/music/coleccion1")
 COLLECTION_2_PATH = os.environ.get("COLLECTION_2_PATH", "/mnt/music/coleccion2")
