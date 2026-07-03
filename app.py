@@ -24,6 +24,129 @@ from config import (
 
 app = Flask(__name__)
 
+# ── Panel de configuración (⚙) ───────────────────────────────────────────────
+# Mismo patrón que dieta_sonora: AIRSONIC_*/LASTFM_API_KEY van al .env propio
+# (montado en /app/.env). Las 2 rutas de colección son distintas: el
+# contenedor solo conoce los mount points fijos (/mnt/music/coleccion1/2);
+# la ruta REAL del host la fija TRASVASE_COLLECTION_1_PATH/_2_PATH en el .env
+# raíz de tumtumpa, que es de donde docker-compose interpola los volumes —
+# cambiarlas requiere RECREAR el contenedor, no solo reiniciarlo.
+SETTINGS_ENV_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+SETTINGS_ROOT_ENV_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "root.env")
+SETTINGS_PASSWORD = os.environ.get("SETTINGS_PASSWORD", "")
+VARS_SPEC = [
+    {"name": "AIRSONIC_URL", "secret": False, "help": "URL base de Airsonic"},
+    {"name": "AIRSONIC_USER", "secret": False, "help": "Usuario Airsonic"},
+    {"name": "AIRSONIC_PASSWORD", "secret": True, "help": "Contraseña Airsonic"},
+    {"name": "LASTFM_API_KEY", "secret": True, "help": "API key de Last.fm"},
+    {"name": "TRASVASE_COLLECTION_1_PATH", "secret": False, "location": "root",
+     "help": "Ruta host de la Colección 1 (bind mount — requiere recrear el contenedor)"},
+    {"name": "TRASVASE_COLLECTION_2_PATH", "secret": False, "location": "root",
+     "help": "Ruta host de la Colección 2 (bind mount — requiere recrear el contenedor)"},
+]
+_HAS_SECRETS = any(v.get("secret") for v in VARS_SPEC)
+
+
+def _settings_path(spec):
+    return SETTINGS_ROOT_ENV_PATH if spec.get("location") == "root" else SETTINGS_ENV_PATH
+
+
+def _read_env_file(path):
+    values = {}
+    if not os.path.exists(path):
+        return values
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            s = line.strip()
+            if not s or s.startswith("#") or "=" not in s:
+                continue
+            k, v = s.split("=", 1)
+            v = v.strip()
+            if len(v) >= 2 and v[0] == v[-1] and v[0] in ('"', "'"):
+                v = v[1:-1]
+            values[k.strip()] = v
+    return values
+
+
+def _write_env_file(path, updates):
+    lines = []
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    seen = set()
+    out = []
+    for line in lines:
+        s = line.strip()
+        if s and not s.startswith("#") and "=" in s:
+            k = s.split("=", 1)[0].strip()
+            if k in updates:
+                out.append(f"{k}={updates[k]}\n")
+                seen.add(k)
+                continue
+        out.append(line)
+    for k, v in updates.items():
+        if k not in seen:
+            if out and not out[-1].endswith("\n"):
+                out[-1] += "\n"
+            out.append(f"{k}={v}\n")
+    with open(path, "w", encoding="utf-8") as f:
+        f.writelines(out)
+
+
+def _current_value(spec):
+    path = _settings_path(spec)
+    file_vals = _read_env_file(path)
+    if spec["name"] in file_vals:
+        return file_vals[spec["name"]]
+    return os.environ.get(spec["name"], spec.get("default", ""))
+
+
+def _check_auth(password):
+    if not SETTINGS_PASSWORD:
+        return not _HAS_SECRETS
+    return password == SETTINGS_PASSWORD
+
+
+@app.route("/api/settings", methods=["POST"])
+def api_settings():
+    d = request.get_json(silent=True) or {}
+    password = d.get("password") or ""
+    requires = bool(SETTINGS_PASSWORD) or _HAS_SECRETS
+    authorized = _check_auth(password)
+    if requires and not authorized:
+        error = "Contraseña incorrecta" if password else None
+        if not SETTINGS_PASSWORD:
+            error = "Este servicio tiene credenciales pero no hay SETTINGS_PASSWORD configurada. Añádela al .env y reinicia el contenedor."
+        return jsonify({"requires_password": True, "authorized": False, "error": error})
+    vars_out = [
+        {"name": v["name"], "value": _current_value(v), "secret": v["secret"], "help": v.get("help", "")}
+        for v in VARS_SPEC
+    ]
+    return jsonify({"requires_password": requires, "authorized": True, "vars": vars_out})
+
+
+@app.route("/api/settings/save", methods=["POST"])
+def api_settings_save():
+    d = request.get_json(silent=True) or {}
+    if not _check_auth(d.get("password") or ""):
+        return jsonify({"error": "Contraseña incorrecta"}), 403
+    by_name = {v["name"]: v for v in VARS_SPEC}
+    updates = {k: v for k, v in (d.get("values") or {}).items() if k in by_name}
+    if not updates:
+        return jsonify({"error": "Nada que guardar"}), 400
+    by_path = {}
+    for k, v in updates.items():
+        path = _settings_path(by_name[k])
+        by_path.setdefault(path, {})[k] = v
+    for path, vals in by_path.items():
+        _write_env_file(path, vals)
+    touched_root = any(_settings_path(by_name[k]) == SETTINGS_ROOT_ENV_PATH for k in updates)
+    message = "Guardado. Reinicia el contenedor para aplicar los cambios."
+    if touched_root:
+        message = ("Guardado. Alguna variable es una ruta de bind mount — hace falta "
+                    "RECREAR el contenedor (docker compose up -d --build), no basta con reiniciarlo.")
+    return jsonify({"ok": True, "message": message})
+
 
 # ---------------------------------------------------------------------------
 # DB helper
