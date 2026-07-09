@@ -934,16 +934,27 @@ function updateDetSub(rows) {
 }
 
 // ── Refresh button ──────────────────────────────────────────────────────────
-$('btn-refresh').addEventListener('click', async () => {
+$('btn-refresh').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.title = 'Escaneando…';
+  try {
+    await api('/api/scan', { method: 'POST' });
+  } catch (err) {
+    alert('Error al reescanear: ' + err.message);
+  }
   // Bust all caches
   Object.keys(expCache).forEach(k => delete expCache[k]);
   Object.keys(detCache).forEach(k => delete detCache[k]);
   currentDetailRows = [];
+  await loadStats();
   await loadMissing();
   if (exploreLoaded) {
     await loadExplore(true);
     if (activeItem) openDetail(activeItem);
   }
+  btn.disabled = false;
+  btn.title = '';
 });
 
 // ── Init ────────────────────────────────────────────────────────────────────

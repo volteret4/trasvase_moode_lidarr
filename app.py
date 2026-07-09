@@ -11,6 +11,7 @@ import os
 import secrets
 import shutil
 import sqlite3
+import subprocess
 from datetime import date
 
 import requests
@@ -241,6 +242,22 @@ def temp_page():
 # ---------------------------------------------------------------------------
 # API — trasvase (C2 → C1)
 # ---------------------------------------------------------------------------
+
+@app.route("/api/scan", methods=["POST"])
+def api_scan():
+    """Reescanea las dos colecciones (scan.py) y sincroniza la base de datos."""
+    scan_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scan.py")
+    try:
+        res = subprocess.run(
+            ["python3", scan_script],
+            capture_output=True, text=True, timeout=1800,
+        )
+    except subprocess.TimeoutExpired:
+        return jsonify({"error": "El escaneo tardó demasiado (timeout)"}), 500
+    if res.returncode != 0:
+        return jsonify({"error": res.stderr or "Error ejecutando scan.py"}), 500
+    return jsonify({"success": True, "message": "Colecciones reescaneadas", "log": res.stdout[-2000:]})
+
 
 @app.route("/api/stats")
 def api_stats():
