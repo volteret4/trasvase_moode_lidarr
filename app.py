@@ -40,9 +40,9 @@ VARS_SPEC = [
     {"name": "AIRSONIC_PASSWORD", "secret": True, "help": "Contraseña Airsonic"},
     {"name": "LASTFM_API_KEY", "secret": True, "help": "API key de Last.fm"},
     {"name": "TRASVASE_COLLECTION_1_PATH", "secret": False, "location": "root",
-     "help": "Ruta host de la Colección 1 (bind mount — requiere recrear el contenedor)"},
+     "help": "Colección 1 = raíz de 'moode' (la colección completa que sirve Airsonic; dentro tiene temp/ para discos sin decidir). Ruta host (bind mount — requiere recrear el contenedor)"},
     {"name": "TRASVASE_COLLECTION_2_PATH", "secret": False, "location": "root",
-     "help": "Ruta host de la Colección 2 (bind mount — requiere recrear el contenedor)"},
+     "help": "Colección 2 = ruta de 'lidarr' (descargas), carpeta/disco totalmente distinto de la Colección 1. Ruta host (bind mount — requiere recrear el contenedor)"},
 ]
 _HAS_SECRETS = any(v.get("secret") for v in VARS_SPEC)
 
