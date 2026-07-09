@@ -7,11 +7,16 @@ except FileNotFoundError:
     # En Docker las variables llegan ya descifradas vía docker-compose (scripts/up.sh)
     print("Aviso: no se encontró .encrypted.env; usando variables de entorno ya exportadas")
 
-COLLECTION_1_PATH = os.environ.get("COLLECTION_1_PATH", "/mnt/music/coleccion1")
-COLLECTION_2_PATH = os.environ.get("COLLECTION_2_PATH", "/mnt/music/coleccion2")
-TEMP_PATH         = os.environ.get("TEMP_PATH", os.path.join(
-                        os.environ.get("COLLECTION_1_PATH", "/mnt/music/coleccion1"), "temp", "auto-dietpi"
-                    ))
+# Rutas FIJAS dentro del contenedor -- no configurables por variable de
+# entorno a propósito. La ruta real del host se elige con
+# TRASVASE_COLLECTION_1_PATH/_2_PATH (ver docker-compose.yml), que docker
+# monta siempre en estos mismos puntos internos; un COLLECTION_1_PATH
+# suelto en el .env (fácil de confundir con el TRASVASE_-prefijado) apuntaría
+# a una ruta del host que no existe dentro del contenedor y el escaneo
+# encontraría 0 álbumes en silencio.
+COLLECTION_1_PATH = "/mnt/music/coleccion1"
+COLLECTION_2_PATH = "/mnt/music/coleccion2"
+TEMP_PATH         = os.path.join(COLLECTION_1_PATH, "temp", "auto-dietpi")
 DB_PATH           = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.db")
 
 FLASK_HOST = os.environ.get("FLASK_HOST", "0.0.0.0")
