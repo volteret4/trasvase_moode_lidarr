@@ -293,6 +293,42 @@
   input[type="text"]:focus { border-color: var(--green-dim); box-shadow: var(--green-glow); }
   label.field-label { display: block; color: #555; font-size: .75rem; text-transform: uppercase;
     letter-spacing: .1em; margin-bottom: .4rem; }
+
+  /* ── Responsive: tablet (~768px) ── */
+  @media (max-width:768px){
+    header{padding:0 1rem;gap:.65rem}
+    .logo{font-size:1rem}
+    .nav-link{padding:.45rem .65rem}
+    .stats-bar{padding:.5rem 1rem;gap:.6rem 1.1rem}
+    .toolbar{padding:.55rem 1rem}
+    .btn{padding:.5rem .85rem}
+    .btn svg{width:14px;height:14px}
+    .btn-icon{width:34px;height:34px}
+    .btn-icon svg{width:14px;height:14px}
+    label.cb-label{padding:.35rem}
+    .modal{max-width:calc(100vw - 2rem)}
+    .as-result{flex-wrap:wrap}
+  }
+
+  /* ── Responsive: phones (~480px and down) ── */
+  @media (max-width:480px){
+    header{padding:0 .6rem;gap:.4rem}
+    .logo{font-size:.86rem;letter-spacing:.08em}
+    .logo span{display:none}
+    nav{gap:.15rem}
+    .nav-link{padding:.4rem .5rem;font-size:.68rem}
+    .stats-bar{padding:.5rem .6rem;gap:.5rem .9rem}
+    .stat-label{font-size:.66rem}
+    .stat-value{font-size:.86rem}
+    .toolbar{padding:.5rem .6rem;gap:.45rem}
+    .search-wrap{min-width:120px}
+    .btn{padding:.45rem .65rem;font-size:.72rem}
+    td{font-size:.74rem;padding:.32rem .5rem}
+    thead th{padding:.4rem .5rem;font-size:.64rem}
+    .cover-thumb,.cover-ph{width:32px;height:32px}
+    .modal{padding:1.3rem;min-width:0;width:100%}
+    #airsonic-modal .modal{min-width:0!important;width:100%!important;max-width:calc(100vw - 2rem)!important}
+  }
 </style>
 </head>
 <body>

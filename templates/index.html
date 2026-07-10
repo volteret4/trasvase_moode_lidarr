@@ -247,6 +247,46 @@ td:first-child{text-align:center;vertical-align:middle;width:36px;max-width:none
 .modal h3{color:var(--g);font-size:.92rem;letter-spacing:.1em;text-transform:uppercase}
 .modal p{color:var(--tx);font-size:.83rem;line-height:1.7}
 .modal-act{display:flex;gap:.55rem;justify-content:flex-end}
+
+/* ── Responsive: tablet (~768px) ── */
+@media (max-width:768px){
+  header{padding:0 1rem;gap:.65rem}
+  .logo{font-size:1rem}
+  .nav-link{padding:.45rem .65rem}
+  .stats-bar{padding:.5rem 1rem;gap:.6rem 1.1rem}
+  .main-tabs{padding:0 1rem}
+  .toolbar,.exp-toolbar{padding:.55rem 1rem}
+  .btn{padding:.5rem .85rem}
+  .btn svg{width:14px;height:14px}
+  .bi{width:34px;height:34px}
+  .bi svg{width:14px;height:14px}
+  label.cbl{padding:.35rem}
+  .exp-body{flex-direction:column;overflow:auto}
+  .exp-lp{width:100%;max-height:38vh;border-right:none;border-bottom:1px solid var(--br)}
+  .exp-dp{flex:1;min-height:260px}
+  .modal{max-width:calc(100vw - 2rem)}
+}
+
+/* ── Responsive: phones (~480px and down) ── */
+@media (max-width:480px){
+  header{padding:0 .6rem;gap:.4rem}
+  .logo{font-size:.86rem;letter-spacing:.08em}
+  .logo span{display:none}
+  nav{gap:.15rem}
+  .nav-link{padding:.4rem .5rem;font-size:.68rem}
+  .stats-bar{padding:.5rem .6rem;gap:.5rem .9rem}
+  .stat-label{font-size:.66rem}
+  .stat-value{font-size:.86rem}
+  .main-tabs{padding:0 .6rem}
+  .mtab{padding:.5rem .65rem;font-size:.68rem}
+  .toolbar,.exp-toolbar{padding:.5rem .6rem;gap:.45rem}
+  .sw{min-width:120px}
+  .btn{padding:.45rem .65rem;font-size:.72rem}
+  td,.dt-tbl td{font-size:.74rem;padding:.32rem .5rem}
+  thead th,.dt-tbl thead th{padding:.4rem .5rem;font-size:.64rem}
+  .cover-thumb,.cover-ph{width:32px;height:32px}
+  .modal{padding:1.3rem;min-width:0;width:100%}
+}
 </style>
 </head>
 <body>
