@@ -42,11 +42,13 @@ CREATE TABLE IF NOT EXISTS albums (
     mbid        TEXT,
     file_count  INTEGER DEFAULT 0,
     audio_count INTEGER DEFAULT 0,
-    cover_path  TEXT
+    cover_path  TEXT,
+    missing     INTEGER DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_albums_collection ON albums(collection);
 CREATE INDEX IF NOT EXISTS idx_albums_artist_id  ON albums(artist_id);
+CREATE INDEX IF NOT EXISTS idx_albums_missing    ON albums(collection, missing);
 """
 
 AUDIO_EXTS = {'.flac', '.mp3', '.ogg', '.m4a', '.aac', '.wav', '.ape', '.wv', '.opus'}
@@ -61,11 +63,39 @@ def init_db(conn):
         ("file_count",  "INTEGER DEFAULT 0"),
         ("audio_count", "INTEGER DEFAULT 0"),
         ("cover_path",  "TEXT"),
+        ("missing",     "INTEGER DEFAULT 0"),
     ]:
         try:
             conn.execute(f"ALTER TABLE albums ADD COLUMN {col} {definition}")
         except sqlite3.OperationalError:
             pass  # already exists
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_albums_missing ON albums(collection, missing)")
+    conn.commit()
+
+
+def recompute_missing(conn):
+    """Recalcula qué álbumes de la colección 2 no están en la 1 (comparación
+    case-insensitive de artista+título) y lo guarda en albums.missing, para
+    que la web lo lea directo sin repetir este cálculo (caro: NOT EXISTS
+    cruzando dos tablas por LOWER()) en cada carga de página."""
+    conn.execute("UPDATE albums SET missing = 0 WHERE collection = 2")
+    conn.execute("""
+        UPDATE albums SET missing = 1
+        WHERE collection = 2
+          AND id IN (
+              SELECT a2.id
+              FROM albums a2
+              JOIN artists ar ON a2.artist_id = ar.id
+              WHERE a2.collection = 2
+                AND NOT EXISTS (
+                    SELECT 1 FROM albums a1
+                    JOIN artists ar1 ON a1.artist_id = ar1.id
+                    WHERE a1.collection = 1
+                      AND LOWER(ar1.name) = LOWER(ar.name)
+                      AND LOWER(a1.title) = LOWER(a2.title)
+                )
+          )
+    """)
     conn.commit()
 
 
@@ -287,6 +317,9 @@ def main():
     print("\nRemoving stale entries...")
     r1 = remove_stale(conn, 1, seen1)
     r2 = remove_stale(conn, 2, seen2)
+
+    print("\nRecomputing missing albums (collection 2 not in collection 1)...")
+    recompute_missing(conn)
 
     c1 = conn.execute("SELECT COUNT(*) FROM albums WHERE collection=1").fetchone()[0]
     c2 = conn.execute("SELECT COUNT(*) FROM albums WHERE collection=2").fetchone()[0]

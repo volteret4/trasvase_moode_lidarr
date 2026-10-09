@@ -166,6 +166,7 @@ def _migrate_db(conn):
         ("file_count",  "INTEGER DEFAULT 0"),
         ("audio_count", "INTEGER DEFAULT 0"),
         ("cover_path",  "TEXT"),
+        ("missing",     "INTEGER DEFAULT 0"),
     ]:
         try:
             conn.execute(f"ALTER TABLE albums ADD COLUMN {col} {defn}")
@@ -184,16 +185,14 @@ MISSING_QUERY = """
            a2.path, a2.file_count, a2.audio_count, a2.cover_path
     FROM albums a2
     JOIN artists ar ON a2.artist_id = ar.id
-    WHERE a2.collection = 2
-      AND NOT EXISTS (
-          SELECT 1 FROM albums a1
-          JOIN artists ar1 ON a1.artist_id = ar1.id
-          WHERE a1.collection = 1
-            AND LOWER(ar1.name) = LOWER(ar.name)
-            AND LOWER(a1.title) = LOWER(a2.title)
-      )
+    WHERE a2.collection = 2 AND a2.missing = 1
     ORDER BY ar.name COLLATE NOCASE, a2.year DESC, a2.title COLLATE NOCASE
 """
+# Nota: "missing" lo calcula scan.py (recompute_missing) una vez por escaneo,
+# no en cada carga -- antes esta query comparaba LOWER(artista)+LOWER(título)
+# contra toda la colección 1 con NOT EXISTS (sin índice posible), ~6s por
+# ejecución, y /api/stats la repetía una segunda vez. Si algún día hace falta
+# recalcularlo sin pasar por scan.py completo, llamar a scan.recompute_missing.
 
 
 # ---------------------------------------------------------------------------
@@ -266,7 +265,7 @@ def api_stats():
         "collection1": conn.execute("SELECT COUNT(*) FROM albums WHERE collection=1").fetchone()[0],
         "collection2": conn.execute("SELECT COUNT(*) FROM albums WHERE collection=2").fetchone()[0],
         "artists":     conn.execute("SELECT COUNT(*) FROM artists").fetchone()[0],
-        "missing":     conn.execute(f"SELECT COUNT(*) FROM ({MISSING_QUERY})").fetchone()[0],
+        "missing":     conn.execute("SELECT COUNT(*) FROM albums WHERE collection=2 AND missing=1").fetchone()[0],
     }
     conn.close()
     return jsonify(stats)
