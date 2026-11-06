@@ -16,7 +16,10 @@ except FileNotFoundError:
 # encontraría 0 álbumes en silencio.
 COLLECTION_1_PATH = "/mnt/music/coleccion1"
 COLLECTION_2_PATH = "/mnt/music/coleccion2"
-TEMP_PATH         = os.path.join(COLLECTION_1_PATH, "temp", "auto-dietpi")
+# temp está fuera de la colección 1 (host: /ruta/al/nas/moode/temp, montado
+# por TRASVASE_TEMP_PATH); scan.py lo cuenta como colección 1
+TEMP_ROOT         = "/mnt/music/temp"
+TEMP_PATH         = os.path.join(TEMP_ROOT, "auto-dietpi")
 DB_PATH           = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.db")
 
 FLASK_HOST = os.environ.get("FLASK_HOST", "0.0.0.0")

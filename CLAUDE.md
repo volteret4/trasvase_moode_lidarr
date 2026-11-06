@@ -52,10 +52,10 @@ One `artists` row per unique name (case-insensitive). Albums in `temp/` are stor
 | Method   | Path                          | Description                                                |
 |----------|-------------------------------|------------------------------------------------------------|
 | GET      | `/api/stats`                  | Counts for both collections, artists, missing              |
-| GET      | `/api/albums/missing`         | Albums in C2 with no matching artist+title in C1           |
+| GET      | `/api/albums/missing`         | Albums in C2 with no matching artist+title in C1, with `added_at` (folder creation time, or mtime if older for bulk-copied albums; epoch, null if unknown) |
 | POST     | `/api/albums/copy`            | `{ids:[…]}` — copy C2 → `TEMP_PATH/YYYY-MM-DD/album`      |
 | DELETE   | `/api/albums/<id>`            | Delete album from disk + DB                                |
-| GET      | `/api/temp/albums`            | Temp albums with `is_duplicate` flag                       |
+| GET      | `/api/temp/albums`            | Temp albums with `is_duplicate` flag and `added_at` (folder creation time, epoch; null if unknown) |
 | GET      | `/api/temp/stats`             | `{total, duplicates, unique}` for temp folder              |
 | DELETE   | `/api/temp/albums/<id>`       | Delete from temp only (403 if path escapes TEMP_PATH)      |
 | GET      | `/api/explore`                | `?view=artists\|genres\|labels` — aggregate counts C1/C2   |

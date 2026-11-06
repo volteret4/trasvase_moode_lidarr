@@ -123,6 +123,7 @@ tbody tr.checked{background:#0a1e0a}
 td{padding:.38rem .65rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0}
 td:first-child{text-align:center;vertical-align:middle;width:36px;max-width:none}
 .td-artist{color:var(--th);font-weight:500}.td-title{color:var(--g)}
+.td-added{color:#888;font-size:.78rem;max-width:none}
 .td-year{color:#888}.td-genre{color:#6a9e6a;font-size:.78rem}
 .td-label{color:#666;font-size:.78rem}.td-path{color:#444;font-size:.75rem;font-style:italic}
 .td-num{color:#5a8a5a;text-align:right;font-size:.78rem}
@@ -496,8 +497,12 @@ class ColMgr {
           const d = this.defaults.find(x => x.id === s.id);
           return d ? { ...d, visible: s.visible } : null;
         }).filter(Boolean);
-        // add any new defaults not in saved
-        this.defaults.forEach(d => { if (!out.find(c => c.id === d.id)) out.push({...d}); });
+        // add any new defaults not in saved, keeping fixed columns (Acciones) last
+        this.defaults.forEach(d => {
+          if (out.find(c => c.id === d.id)) return;
+          const i = out.findIndex(c => c.fixed);
+          out.splice(i < 0 ? out.length : i, 0, {...d});
+        });
         return out;
       }
     } catch(e) {}
@@ -583,6 +588,7 @@ const MISSING_DEFAULTS = [
   { id:'year',        label:'Año',       visible:true,  fixed:false, sortable:true  },
   { id:'genre',       label:'Género',    visible:true,  fixed:false, sortable:true  },
   { id:'label',       label:'Sello',     visible:true,  fixed:false, sortable:true  },
+  { id:'added_at',    label:'Añadido',   visible:true,  fixed:false, sortable:true  },
   { id:'path',        label:'Ruta C2',   visible:false, fixed:false, sortable:false },
   { id:'file_count',  label:'Archivos',  visible:false, fixed:false, sortable:true  },
   { id:'audio_count', label:'Audio',     visible:false, fixed:false, sortable:true  },
@@ -626,7 +632,7 @@ function applyFilterM() {
 function sortM() {
   filteredM.sort((a,b) => {
     let va=a[sortColM]??'', vb=b[sortColM]??'';
-    if (sortColM==='year'||sortColM==='file_count'||sortColM==='audio_count') { va=va||0; vb=vb||0; return sortDirM*(va-vb); }
+    if (sortColM==='year'||sortColM==='added_at'||sortColM==='file_count'||sortColM==='audio_count') { va=va||0; vb=vb||0; return sortDirM*(va-vb); }
     return sortDirM*String(va).localeCompare(String(vb),'es',{sensitivity:'base'});
   });
   renderMissing();
@@ -651,7 +657,8 @@ function renderMissing() {
   $('missing-thead').querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => {
       const col = th.dataset.col;
-      if (sortColM===col) sortDirM*=-1; else { sortColM=col; sortDirM=1; }
+      if (sortColM===col) sortDirM*=-1;
+      else { sortColM=col; sortDirM = col==='added_at' ? -1 : 1; } // lo más reciente primero
       sortM();
     });
   });
@@ -676,6 +683,7 @@ function renderMissing() {
         case 'year':   return `<td class="td-year">${a.year||'—'}</td>`;
         case 'genre':  return `<td class="td-genre"  title="${esc(a.genre)}">${esc(a.genre)||'—'}</td>`;
         case 'label':  return `<td class="td-label"  title="${esc(a.label)}">${esc(a.label)||'—'}</td>`;
+        case 'added_at': return `<td class="td-added">${a.added_at ? new Date(a.added_at*1000).toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'}) : '—'}</td>`;
         case 'path':   return `<td class="td-path"   title="${esc(a.path)}">${esc(a.path)||'—'}</td>`;
         case 'file_count':  return `<td class="td-num">${a.file_count??'—'}</td>`;
         case 'audio_count': return `<td class="td-num">${a.audio_count??'—'}</td>`;

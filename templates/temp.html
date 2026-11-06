@@ -490,7 +490,7 @@ const TEMP_COL_DEFAULTS = [
   { id: 'year',        label: 'Año',       visible: true,  sortable: true  },
   { id: 'genre',       label: 'Género',    visible: true,  sortable: true  },
   { id: 'label',       label: 'Sello',     visible: false, sortable: true  },
-  { id: 'imported',    label: 'Importado', visible: true,  sortable: true  },
+  { id: 'imported',    label: 'Añadido',   visible: true,  sortable: true  },
   { id: 'path',        label: 'Ruta',      visible: false, sortable: false },
   { id: 'file_count',  label: 'Ficheros',  visible: false, sortable: true  },
   { id: 'audio_count', label: 'Audio',     visible: false, sortable: true  },
@@ -694,7 +694,8 @@ function rebuildHeader() {
       th.classList.add('sortable');
       if (sortCol === col.id) th.classList.add(sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
       th.addEventListener('click', () => {
-        if (sortCol === col.id) sortDir *= -1; else { sortCol = col.id; sortDir = 1; }
+        if (sortCol === col.id) sortDir *= -1;
+        else { sortCol = col.id; sortDir = col.id === 'imported' ? -1 : 1; } // lo más reciente primero
         document.querySelectorAll('thead th').forEach(t => t.classList.remove('sorted-asc','sorted-desc'));
         th.classList.add(sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
         sortFiltered();
@@ -729,7 +730,12 @@ function renderCell(col, a) {
     case 'year':        return `<td class="td-year">${a.year||'—'}</td>`;
     case 'genre':       return `<td class="td-genre" title="${esc(a.genre)}">${esc(a.genre)||'—'}</td>`;
     case 'label':       return `<td class="td-label" title="${esc(a.label)}">${esc(a.label)||'—'}</td>`;
-    case 'imported':    return `<td>${a.imported ? `<span class="badge-date">${esc(a.imported)}</span>` : '—'}</td>`;
+    case 'imported': {
+      const added = a.added_at
+        ? new Date(a.added_at * 1000).toLocaleString('sv-SE', {dateStyle:'short', timeStyle:'short'})
+        : a.imported;
+      return `<td>${added ? `<span class="badge-date">${esc(added)}</span>` : '—'}</td>`;
+    }
     case 'path':        return `<td class="td-path" title="${esc(a.path)}">${esc(a.path)}</td>`;
     case 'file_count':  return `<td class="td-num">${a.file_count??'—'}</td>`;
     case 'audio_count': return `<td class="td-num">${a.audio_count??'—'}</td>`;
@@ -810,8 +816,14 @@ function applyFilter() {
   sortFiltered();
 }
 
+// Segundos desde epoch; sin fecha de creación, vale la de la carpeta del día.
+function addedKey(a) {
+  return a.added_at ?? (a.imported ? Date.parse(a.imported) / 1000 : 0);
+}
+
 function sortFiltered() {
   filtered.sort((a,b) => {
+    if (sortCol==='imported') return sortDir*(addedKey(a)-addedKey(b));
     let va = a[sortCol]??'', vb = b[sortCol]??'';
     if (sortCol==='year'||sortCol==='file_count'||sortCol==='audio_count') {
       va=va||0; vb=vb||0; return sortDir*(va-vb);

@@ -16,7 +16,7 @@ import time
 from mutagen.flac import FLAC
 from mutagen import MutagenError
 
-from config import COLLECTION_1_PATH, COLLECTION_2_PATH, DB_PATH
+from config import COLLECTION_1_PATH, COLLECTION_2_PATH, DB_PATH, TEMP_ROOT
 
 # ---------------------------------------------------------------------------
 # Database
@@ -310,6 +310,9 @@ def main():
 
     print(f"Scanning Collection 1: {COLLECTION_1_PATH}")
     seen1 = scan_collection(conn, COLLECTION_1_PATH, 1, args.musicbrainz)
+    if os.path.isdir(TEMP_ROOT):
+        print(f"Scanning temp (Collection 1): {TEMP_ROOT}")
+        seen1 |= scan_collection(conn, TEMP_ROOT, 1, args.musicbrainz)
 
     print(f"\nScanning Collection 2: {COLLECTION_2_PATH}")
     seen2 = scan_collection(conn, COLLECTION_2_PATH, 2, args.musicbrainz)

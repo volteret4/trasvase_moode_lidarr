@@ -12,6 +12,7 @@ import secrets
 import shutil
 import sqlite3
 import subprocess
+from collections import Counter
 from datetime import date
 
 import requests
@@ -242,6 +243,69 @@ def temp_page():
 # API — trasvase (C2 → C1)
 # ---------------------------------------------------------------------------
 
+# A folder creation time shared by this many albums comes from a bulk copy, not
+# from when each album arrived.
+BULK_COPY_MIN_ALBUMS = 50
+
+
+def _birth_times(paths):
+    """Return {path: epoch} with each folder's creation time, read from disk.
+
+    Python 3.12's os.stat doesn't expose it on Linux, hence stat(1). Paths it
+    can't date (missing, or a filesystem without birth time) are left out, and
+    stat's non-zero exit for a missing path still leaves the others usable.
+    """
+    if not paths:
+        return {}
+    try:
+        res = subprocess.run(
+            ["stat", "--printf", "%W|%n\\0", "--", *paths],
+            capture_output=True, encoding="utf-8", errors="surrogateescape", timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return {}
+    births = {}
+    for entry in res.stdout.split("\0"):
+        birth, _, path = entry.partition("|")
+        if birth.isdigit() and int(birth) > 0:
+            births[path] = int(birth)
+    return births
+
+
+def _added_times(paths):
+    """Like _birth_times, but bulk-copied albums use their older mtime instead.
+
+    An mtime newer than the bulk copy means the album changed afterwards, so
+    the copy's date stays the better estimate.
+    """
+    births = _birth_times(paths)
+    per_birth = Counter(births.values())
+    added = {}
+    for path, birth in births.items():
+        added[path] = birth
+        if per_birth[birth] >= BULK_COPY_MIN_ALBUMS:
+            try:
+                added[path] = min(birth, int(os.stat(path).st_mtime))
+            except OSError:
+                pass
+    return added
+
+
+def _give_to_temp_owner(path):
+    """Chown a tree to TEMP_PATH's owner.
+
+    This container runs as root, and dieta-sonora (uid 1000) copies into the
+    same per-day folders: if one stays root's, its copies fail for that day.
+    """
+    if os.geteuid() != 0:
+        return
+    owner = os.stat(TEMP_PATH)
+    for root, dirs, files in os.walk(path):
+        os.chown(root, owner.st_uid, owner.st_gid)
+        for name in dirs + files:
+            os.chown(os.path.join(root, name), owner.st_uid, owner.st_gid, follow_symlinks=False)
+
+
 @app.route("/api/scan", methods=["POST"])
 def api_scan():
     """Reescanea las dos colecciones (scan.py) y sincroniza la base de datos."""
@@ -276,7 +340,8 @@ def api_missing():
     conn = get_db()
     rows = conn.execute(MISSING_QUERY).fetchall()
     conn.close()
-    return jsonify([dict(r) for r in rows])
+    added = _added_times([r["path"] for r in rows])
+    return jsonify([dict(r) | {"added_at": added.get(r["path"])} for r in rows])
 
 
 @app.route("/api/albums/copy", methods=["POST"])
@@ -313,7 +378,11 @@ def api_copy():
 
         try:
             os.makedirs(os.path.dirname(dst_path), exist_ok=True)
-            shutil.copytree(src_path, dst_path)
+            _give_to_temp_owner(os.path.dirname(dst_path))
+            try:
+                shutil.copytree(src_path, dst_path)
+            finally:
+                _give_to_temp_owner(dst_path)
 
             conn.execute("INSERT INTO artists(name) VALUES(?) ON CONFLICT(name) DO NOTHING",
                          (row["artist"],))
@@ -397,7 +466,9 @@ def api_temp_albums():
     conn = get_db()
     rows = conn.execute(TEMP_ALBUMS_QUERY, {"tp": tp}).fetchall()
     conn.close()
-    result = [dict(r) | {"imported": _import_date(r["path"])} for r in rows]
+    births = _birth_times([r["path"] for r in rows])
+    result = [dict(r) | {"imported": _import_date(r["path"]), "added_at": births.get(r["path"])}
+              for r in rows]
     return jsonify(result)
 
 
