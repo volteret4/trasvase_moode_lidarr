@@ -1,0 +1,40 @@
+# Instalación por separado. Dentro de REPEAT-ONE se usa el docker-compose.yml de REPEAT-ONE.
+services:
+  trasvase:
+    build: .
+    restart: unless-stopped
+    user: "${UID_GID:-1000:1000}"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - HOME=/tmp
+      - PYTHONDONTWRITEBYTECODE=1
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5000
+    volumes:
+      - .:/app
+      - ${TRASVASE_COLLECTION_1_PATH:-./datos/coleccion1}:/mnt/music/coleccion1
+      - ${TRASVASE_COLLECTION_2_PATH:-./datos/coleccion2}:/mnt/music/coleccion2
+      - ${TRASVASE_TEMP_PATH:-./datos/temp}:/mnt/music/temp
+    ports:
+      - "${PUERTO:-5020}:5000"
+    labels:
+      ofelia.enabled: "true"
+      repeat-one.ofelia: "trasvase_moode_lidarr"
+      ofelia.job-exec.trasvase-scan.schedule: "0 50 0 * * *"
+      ofelia.job-exec.trasvase-scan.command: "nice -n 19 ionice -c 3 python3 scan.py"
+
+  # Ofelia lanza los trabajos programados de las etiquetas ofelia.job-exec.* de arriba
+  # (los mismos horarios que en REPEAT-ONE). Solo ve los contenedores de este repo.
+  # Si no quieres actualizaciones automáticas: docker compose stop ofelia
+  ofelia:
+    image: mcuadros/ofelia:latest
+    restart: unless-stopped
+    command: daemon --docker --docker-filter=label=repeat-one.ofelia=trasvase_moode_lidarr
+    environment:
+      - TZ=${TZ:-Europe/Madrid}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - trasvase
