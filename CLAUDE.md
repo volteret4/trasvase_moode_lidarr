@@ -15,9 +15,9 @@ Music collection sync tool with two web interfaces:
 pip install -r requirements.txt
 
 # Edit config.py or set env vars (actual paths come from .encrypted.env via sops):
-export COLLECTION_1_PATH=/ruta/al/nas/moode/moode
-export COLLECTION_2_PATH=/ruta/al/nas/lidar/torrents_backup
-export TEMP_PATH=/ruta/al/nas/moode/moode/temp/auto-dietpi  # default: COLLECTION_1_PATH/temp/auto-dietpi
+export COLLECTION_1_PATH=/musica/coleccion1
+export COLLECTION_2_PATH=/musica/descargas
+export TEMP_PATH=/musica/coleccion1/temp  # default: COLLECTION_1_PATH/temp/auto-dietpi
 
 # Airsonic (optional, for /temp page):
 export AIRSONIC_URL=http://localhost:4040
